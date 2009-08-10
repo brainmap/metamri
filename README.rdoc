@@ -1,0 +1,43 @@
+== ImageData
+
+A small library that can be used to extract metadata from large collections of research MR imaging data sets.  Support is also provided to insert the metadata into a Wisconsin ADRC Imaging Core compatible database.  Several 
+command line utilities are provided as well as a minimal API that is useful for building ruby on rails rake tasks.
+
+You will most likely be interested in either:
+
+= import_visit.rb CLU
+
+== Synopsis 
+ A simple utility for importing imaging data collected during one visit into the WADRC Data Tools web
+ application.  Data from a visit is contained in one big directory that may have many subdirectories.
+ Each individual imaging scan may be composed of an entire directory of dicom files or one single p-file.
+ This utility scans through all of the image data sets and retrieved meta-data about the scans from their
+ header information.
+
+== Examples
+ import_visit.rb /path/to/raw/mri/data study.codename /path/to/db/db.sqlite3
+
+== Usage 
+ import_visit.rb <raw_data_directory> <scan_procedure_codename> <database_file>
+ 
+ For help use: import_visit.rb -h
+
+== Options
+ -h, --help          Displays help message
+ -v, --visit         Visit raw data directory, absolute path
+ -p, --scan_procedure      scan_procedure codename, e.g. johnson.alz.visit1
+ -d, --database      Database file into which information will imported
+
+== Author
+ K.J. Kosmatka, kk4@medicine.wisc.edu
+
+== Copyright
+ Copyright (c) 2009 WADRC Imaging Core.
+
+
+or:
+
+
+= VisitRawDirectory class
+
+ see the doc directory
