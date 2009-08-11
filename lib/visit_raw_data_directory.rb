@@ -77,6 +77,17 @@ class VisitRawDataDirectory
     flash "Completed scanning #{@visit_directory}"
   end
   
+  # use this to initialize Visit objects in the rails app
+  def attributes_for_active_record
+    { 
+      :date => @timestamp.to_s, 
+      :rmr => @rmr_number, 
+      :path => @visit_directory, 
+      :scanner_source => get_scanner_source,
+      :scan_procedure_attributes => { :codename => @scan_procedure_name } 
+    }
+  end
+  
   # Inserts each dataset in this visit into the specified database.  The specifics
   # of the database insert are handled by the #RawImageDataset class.
   def db_insert!(db_file)

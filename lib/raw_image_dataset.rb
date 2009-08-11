@@ -94,6 +94,18 @@ at the visit level, or even higher when doing a whole file system scan.
      AND path = '#{@directory}' 
      AND timestamp LIKE '#{@timestamp.to_s.split(/\+|Z/).first}%'"
   end
+  
+  def attributes_for_active_record
+    { :rmr => @rmr_number,
+      :series_description => @series_description,
+      :path => @directory,
+      :timestamp => @timestamp.to_s,
+      :glob => glob,
+      :rep_time => @raw_image_files.first.rep_time,
+      :bold_reps => @raw_image_files.first.bold_reps,
+      :slices_per_volume => @raw_image_files.first.num_slices,
+      :scanned_file => @scanned_file }
+  end
    
 
 
