@@ -2,7 +2,7 @@
 Provides a mapping between series descriptions that are extracted from raw image
 headers and some associated attributes.
 =end
-class SeriesDescription
+class SeriesDescriptionParameters
   #:stopdoc:
   SERIES_DESCRIPTIONS = {
     "3-P,Localizer" =>                  [ "3PlaneLoc", "anat", nil ],

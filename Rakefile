@@ -6,9 +6,9 @@ require 'rubygems'
 require 'rake'
 require 'echoe'
 
-Echoe.new('ImageData', '0.1.0') do |p|
+Echoe.new('metamri', '0.1.0') do |p|
   p.description    = "Extraction of MRI metadata and insertion into compatible sqlite3 databases."
-  p.url            = "http://github.com/brainmap/ImageData"
+  p.url            = "http://github.com/brainmap/metamri"
   p.author         = "Kristopher J. Kosmatka"
   p.email          = "kk4@medicine.wisc.edu"
   p.ignore_pattern = ["nbproject/*"]

@@ -71,9 +71,9 @@ class VisitRawDataDirectory
       dd.each_pfile { |pf| @datasets << import_dataset(pf, dd) }
       dd.first_dicom { |fd| @datasets << import_dataset(fd, dd) }
     end
-    #@timestamp = get_visit_timestamp
-    #@rmr_number = get_rmr_number
-    #@scanner_source = get_scanner_source
+    @timestamp = get_visit_timestamp
+    @rmr_number = get_rmr_number
+    @scanner_source = get_scanner_source
     flash "Completed scanning #{@visit_directory}"
   end
   
@@ -370,12 +370,10 @@ class Pathname
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tmpfile = File.join(Dir.tmpdir, tfbase)
     if self.to_s =~ /\.bz2$/
-      puts "unzipping #{self.to_s} to #{tmpfile}"
       `bunzip2 -k -c #{self.to_s} >> #{tmpfile}`
     else
       FileUtils.cp(self.to_s, tmpfile)
     end
-    puts "Working with #{tmpfile}"
     return Pathname.new(tmpfile)
   end
   
