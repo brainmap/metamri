@@ -68,13 +68,22 @@ class VisitRawDataDirectory
     flash "Scanning visit raw data directory #{@visit_directory}"
     d = Pathname.new(@visit_directory)
     d.each_subdirectory do |dd|
-      dd.each_pfile { |pf| @datasets << import_dataset(pf, dd) }
-      dd.first_dicom { |fd| @datasets << import_dataset(fd, dd) }
+      begin 
+        dd.each_pfile { |pf| @datasets << import_dataset(pf, dd) }
+        dd.first_dicom { |fd| @datasets << import_dataset(fd, dd) }
+      rescue Exception => e
+        puts "There was an error scaning dataset #{dd}: #{e}"
+      end
     end
-    @timestamp = get_visit_timestamp
-    @rmr_number = get_rmr_number
-    @scanner_source = get_scanner_source
-    flash "Completed scanning #{@visit_directory}"
+    
+    unless @datasets.size == 0
+      @timestamp = get_visit_timestamp
+      @rmr_number = get_rmr_number
+      @scanner_source = get_scanner_source
+      flash "Completed scanning #{@visit_directory}"
+    else
+      raise(IndexError, "No datasets could be scanned for directory #{@visit_directory}")
+    end
   end
   
   # use this to initialize Visit objects in the rails app
@@ -219,7 +228,7 @@ class VisitRawDataDirectory
     enter_info_in_db, conference, compile_folder, dicom_dvd, user_id, path, scanner_source, created_at, updated_at) 
     VALUES 
     ('#{@timestamp.to_s}', '#{scan_procedure_id.to_s}', '', '', '#{@rmr_number}', 'no', '', 'no', 'no', 
-    'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', NULL, '#{@visit_directory}', #{@scanner_source}, '#{DateTime.now}', '#{DateTime.now}')"
+    'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', NULL, '#{@visit_directory}', '#{@scanner_source}', '#{DateTime.now}', '#{DateTime.now}')"
   end
   
   def import_dataset(rawfile, original_parent_directory)
@@ -340,8 +349,8 @@ class Pathname
         lc = branch.local_copy
         begin
           yield lc
-        rescue
-          # Do nothing
+        rescue Exception => e
+          puts "#{e}"
         ensure
           lc.delete
         end
@@ -356,8 +365,8 @@ class Pathname
         lc = branch.local_copy
         begin
           yield lc
-        rescue
-          # Do nothing
+        rescue Exception => e
+          puts "#{e}"
         ensure
           lc.delete
         end

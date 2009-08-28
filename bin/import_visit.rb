@@ -29,12 +29,12 @@
 #   Copyright (c) 2009 WADRC Imaging Core.
 #
 
-$:.unshift File.join(File.dirname(__FILE__),'..')
+$:.unshift File.join(File.dirname(__FILE__),'../lib')
 
 require 'visit_raw_data_directory'
 require 'pathname'
 require 'rdoc/usage'
-
+require 'logger'
 
 # == Function
 #   Imports imaging data collected during a single visit into the WADRC Data Tools web application database.
@@ -46,16 +46,16 @@ require 'rdoc/usage'
 #   import_visit('/Data/vtrak1/raw/alz_2000/alz001','johnson.alz.visit1','/path/to/the/rails/db/production.sqlite3')
 #
 def import_visit(raw_directory, scan_procedure_codename, database)
+  log = Logger.new(File.basename(raw_directory), shift_age = 7, shift_size = 1048576)  
   v = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
   puts "+++ Importing #{v.visit_directory} as part of #{v.scan_procedure_name} +++"
   begin
     v.scan
-    puts v
     v.db_insert!(database)
   rescue Exception => e
-    puts "There was a problem scanning a dataset in #{visitdir}... skipping."
+    puts "There was a problem scanning a dataset in #{v.visit_directory}... skipping."
     puts "Exception message: #{e.message}"
-    LOG.error "There was a problem scanning a dataset in #{visitdir}... skipping."
+    LOG.error "There was a problem scanning a dataset in #{v.visit_directory}... skipping."
     LOG.error "Exception message: #{e.message}"
   ensure
     v = nil

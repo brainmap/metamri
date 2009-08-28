@@ -242,6 +242,8 @@ private
 Reads the file header using one of the available header reading utilities. 
 Returns both the header data as a one big string, and the name of the utility 
 used to read it.
+
+Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
 =end
   def read_header(absfilepath)
     header = `#{DICOM_HDR} #{absfilepath} 2> /dev/null`

@@ -27,7 +27,7 @@
 #   Copyright (c) 2009 WADRC Imaging Core.
 #
 
-$:.unshift File.join(File.dirname(__FILE__),'..')
+$:.unshift File.join(File.dirname(__FILE__),'../lib')
 
 require 'visit_raw_data_directory'
 require 'pathname'
