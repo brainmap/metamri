@@ -72,7 +72,7 @@ class VisitRawDataDirectory
         dd.each_pfile { |pf| @datasets << import_dataset(pf, dd) }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd) }
       rescue Exception => e
-        puts "There was an error scaning dataset #{dd}: #{e}"
+        raise(IndexError, "There was an error scaning dataset #{dd}: #{e}")
       end
     end
     
@@ -233,7 +233,14 @@ class VisitRawDataDirectory
   
   def import_dataset(rawfile, original_parent_directory)
     puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}"
-    return RawImageDataset.new(original_parent_directory.to_s, [RawImageFile.new(rawfile.to_s)])
+    
+    begin
+      rawimagefile = RawImageFile.new(rawfile.to_s)
+    rescue Exception => e
+      raise(IOError, "Trouble reading raw image file #{rawfile}. #{e}")
+    end
+    
+    return RawImageDataset.new(original_parent_directory.to_s, [rawimagefile])
   end
   
   def get_visit_timestamp

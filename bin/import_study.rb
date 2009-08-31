@@ -65,7 +65,7 @@ STUDIES = {
                      :filter => /^esp3/,
                      :codename => 'carlsson.esprit.visit2.9month' 
   },
-  :gallagher_pd => { :dir => '/Data/vtrak1/raw/gallagher_pd',
+  :gallagher_pd => { :dir => '/Data/vtrak1/raw/gallagher.pd',
                      :logfile => 'gallagher.scan.log',
                      :filter => /^pd..._/,
                      :codename => 'gallagher.pd.visit1' 
@@ -95,7 +95,7 @@ STUDIES = {
                      :filter => /^tbi..._2/,
                      :codename => 'johnson.tbi1000.visit2' 
   },
-  :tbi1000_3 =>    { :dir => '/Data/vtrak1/raw/tbi_aware',
+  :tbi1000_3 =>    { :dir => '/Data/vtrak1/raw/johnson.tbi.aware.visit3',
                      :logfile => 'tbiaware.visit3.scan.log',
                      :filter => /^tbi..._3$/,
                      :codename => 'johnson.tbiaware.visit3' 
@@ -141,8 +141,8 @@ def import_study(study, dbfile)
     rescue Exception => e
       puts "There was a problem scanning a dataset in #{visitdir}... skipping."
       puts "Exception message: #{e.message}"
-      LOG.error "There was a problem scanning a dataset in #{visitdir}... skipping."
-      LOG.error "Exception message: #{e.message}"
+      log.error "There was a problem scanning a dataset in #{visitdir}... skipping."
+      log.error "Exception message: #{e.message}"
     ensure
       v = nil
     end

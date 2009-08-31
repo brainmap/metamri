@@ -69,15 +69,18 @@ unzip a file to a temporary location, be sure to keep the same filename for the
 temporary file.
 =end
   def initialize(pathtofile)
-    
     # raise an error if the file doesn't exist
     absfilepath = File.expand_path(pathtofile)
     raise(IOError, "File not found.") if not File.exists?(absfilepath)
     @filename = File.basename(absfilepath)
     
     # try to read the header, raise an ioerror if unsuccessful
-    @hdr_data, @hdr_reader = read_header(absfilepath)
-    raise(IOError, "Header not readable.") if @hdr_reader.nil?
+    begin
+      @hdr_data, @hdr_reader = read_header(absfilepath)
+      #puts "@hdr_data: #{@hdr_data}; @hdr_reader: #{@hdr_reader}"
+    rescue Exception => e
+      raise(IOError, "Header not readable. #{e}")
+    end
     
     # file type is based on file name but only if the header was read successfully
     @file_type = determine_file_type
@@ -86,8 +89,8 @@ temporary file.
     # are not found
     begin
       import_hdr
-    rescue
-      raise(IOError, "Header import failed.")
+    rescue Exception => e
+      raise(IOError, "Header import failed. #{e}")
     end
     
     # deallocate the header data to save memory space.
@@ -247,12 +250,14 @@ Note: The rdgehdr is a binary file; the correct version for your architecture mu
 =end
   def read_header(absfilepath)
     header = `#{DICOM_HDR} #{absfilepath} 2> /dev/null`
+    #header = `#{DICOM_HDR} #{absfilepath}`
     if ( header.index("ERROR") == nil and 
          header.chomp != "" and 
          header.length > MIN_HDR_LENGTH )
       return [ header, DICOM_HDR ]
     end
     header = `#{RDGEHDR} #{absfilepath} 2> /dev/null`
+    #header = `#{RDGEHDR} #{absfilepath}`
     if ( header.chomp != "" and
          header.length > MIN_HDR_LENGTH )
       return [ header, RDGEHDR ]
@@ -279,7 +284,7 @@ Parses the header data and extracts a collection of instance variables.  If
 @hdr_data and @hdr_reader are not already availables, this function does nothing.
 =end
   def import_hdr
-    return if @hdr_data == nil
+    raise(IndexError, "No Header Data Available.") if @hdr_data == nil
     dicom_hdr_import if (@hdr_reader == "dicom_hdr")
     rdgehdr_import if (@hdr_reader == "rdgehdr")
   end
