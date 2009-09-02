@@ -64,10 +64,11 @@ end
 
 
 
-if __FILE__ == $0
-  RDoc::usage() if ARGV[0] == '-h'
+if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
+  RDoc::usage() if (ARGV[0] == '-h' or ARGV.size != 3)
   raw_directory = ARGV[0]
   scan_procedure_codename = ARGV[1]
   database = ARGV[2]
+  raise(IOError, "Database #{database} not writable or doesn't exist.") unless File.writable?(database)
   import_visit(raw_directory, scan_procedure_codename, database)
 end

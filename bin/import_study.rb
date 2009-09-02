@@ -15,7 +15,7 @@
 #      alz_1, alz_2, cms_wais, cms_uwmr, esprit_1, esprit_2, gallagher_pd, pib_pilot, ries_pilot, ries_1, 
 #      tbi1000_1, tbi1000_2, tbi1000_3, tbiva, wrap140
 #
-#   For help use: import_visit.rb -h
+#   For help use: import_study.rb -h
 #
 # == Options
 #   -h, --help          Displays help message
@@ -31,6 +31,7 @@ $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'visit_raw_data_directory'
 require 'pathname'
+require 'rdoc/usage'
 require 'logger'
 
 #:stopdoc:
@@ -44,6 +45,11 @@ STUDIES = {
                      :logfile => 'alz.visit2.scan.log',
                      :filter => /^alz..._2$/,
                      :codename => 'johnson.alz.visit2' 
+  },
+  :bendlin_wmad => { :dir => '/Data/vtrak1/raw/bendlin_WMAD/ge3T_750_scanner',
+                     :logfile => 'bendline.wmad.scan.log',
+                     :filter => /^wmad/,
+                     :codename => 'bendlin.wmad.visit1' 
   },
   :cms_wais =>     { :dir => '/Data/vtrak1/raw/cms/wais',
                      :logfile => 'cms.wais.scan.log',
@@ -149,13 +155,16 @@ def import_study(study, dbfile)
   end
 end
 
-
-
-if __FILE__ == $0
+if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
+  RDoc::usage() if (ARGV[0] == '-h' or ARGV.size != 2)
   study = STUDIES[ARGV[0].to_sym]
+  raise(IndexError, "Study Not Recognized.") if study.empty? 
   dbfile = ARGV[1]
-  import_study(study, dbfile)
+  raise(IOError, "DB File not writable or not existant") if File.writable(dbfile)
+  begin 
+    import_study(study, dbfile)
+  rescue IndexError, IOError => e
+    puts "There was an error importing study #{study}. #{e}"
+    raise e
+  end
 end
-
-
-
