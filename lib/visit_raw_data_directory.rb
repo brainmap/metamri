@@ -224,11 +224,10 @@ class VisitRawDataDirectory
   def sql_insert_visit(scan_procedure_id=0)
     "INSERT INTO visits 
     (date, scan_procedure_id, scan_number, initials, rmr, radiology_outcome, notes, transfer_mri, transfer_pet,
-    transfer_behavioral_log, check_imaging, check_np, check_MR5_DVD, burn_DICOM_DVD, first_score, second_score,
-    enter_info_in_db, conference, compile_folder, dicom_dvd, user_id, path, scanner_source, created_at, updated_at) 
+    conference, compile_folder, dicom_dvd, user_id, path, scanner_source, created_at, updated_at) 
     VALUES 
     ('#{@timestamp.to_s}', '#{scan_procedure_id.to_s}', '', '', '#{@rmr_number}', 'no', '', 'no', 'no', 
-    'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', 'no', NULL, '#{@visit_directory}', '#{@scanner_source}', '#{DateTime.now}', '#{DateTime.now}')"
+    'no', 'no', 'no', NULL, '#{@visit_directory}', '#{@scanner_source}', '#{DateTime.now}', '#{DateTime.now}')"
   end
   
   def import_dataset(rawfile, original_parent_directory)
