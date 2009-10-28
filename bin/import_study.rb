@@ -47,7 +47,7 @@ STUDIES = {
                      :codename => 'johnson.alz.visit2' 
   },
   :bendlin_wmad => { :dir => '/Data/vtrak1/raw/bendlin_WMAD/ge3T_750_scanner',
-                     :logfile => 'bendline.wmad.scan.log',
+                     :logfile => 'bendlin.wmad.scan.log',
                      :filter => /^wmad/,
                      :codename => 'bendlin.wmad.visit1' 
   },
@@ -158,9 +158,9 @@ end
 if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
   RDoc::usage() if (ARGV[0] == '-h' or ARGV.size != 2)
   study = STUDIES[ARGV[0].to_sym]
-  raise(IndexError, "Study Not Recognized.") if study.empty? 
+  raise(IndexError, "Study Not Recognized.") if study.nil?
   dbfile = ARGV[1]
-  raise(IOError, "DB File not writable or not existant") if File.writable(dbfile)
+  raise(IOError, "DB File not writable or not existant") unless File.writable?(dbfile)
   begin 
     import_study(study, dbfile)
   rescue IndexError, IOError => e
