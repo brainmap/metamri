@@ -4,15 +4,31 @@
 
 require 'rubygems'
 require 'rake'
-require 'echoe'
+# require 'echoe'
+# 
+# Echoe.new('metamri', '0.1.0') do |p|
+#   p.description    = "Extraction of MRI metadata and insertion into compatible sqlite3 databases."
+#   p.url            = "http://github.com/brainmap/metamri"
+#   p.author         = "Kristopher J. Kosmatka"
+#   p.email          = "kk4@medicine.wisc.edu"
+#   p.ignore_pattern = ["nbproject/*"]
+#   p.development_dependencies = []
+# end
+# 
+# Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }
 
-Echoe.new('metamri', '0.1.0') do |p|
-  p.description    = "Extraction of MRI metadata and insertion into compatible sqlite3 databases."
-  p.url            = "http://github.com/brainmap/metamri"
-  p.author         = "Kristopher J. Kosmatka"
-  p.email          = "kk4@medicine.wisc.edu"
-  p.ignore_pattern = ["nbproject/*"]
-  p.development_dependencies = []
+
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gemspec|
+    gemspec.name = "metamri"
+    gemspec.summary = "MRI metadata"
+    gemspec.description = "Extraction of MRI metadata and insertion into compatible sqlite3 databases."
+    gemspec.email = "kk4@medicine.wisc.edu"
+    gemspec.homepage = "http://github.com/brainmap/metamri"
+    gemspec.authors = ["Kristopher J. Kosmatka"]
+  end
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Jeweler not available. Install it with: sudo gem install jeweler"
 end
-
-Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }
