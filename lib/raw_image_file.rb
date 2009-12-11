@@ -74,7 +74,7 @@ temporary file.
     raise(IOError, "File not found.") if not File.exists?(absfilepath)
     @filename = File.basename(absfilepath)
     
-    # try to read the header, raise an ioerror if unsuccessful
+    # try to read the header, raise an IOError if unsuccessful
     begin
       @hdr_data, @hdr_reader = read_header(absfilepath)
       #puts "@hdr_data: #{@hdr_data}; @hdr_reader: #{@hdr_reader}"

@@ -1,6 +1,8 @@
 
 require 'rubygems'
 require 'sqlite3'
+require 'nifti_builder'
+require 'ftools'
 
 =begin rdoc
 A #Dataset defines a single 3D or 4D image, i.e. either a volume or a time series
@@ -25,8 +27,7 @@ class RawImageDataset
   # the file scanned
   attr_reader :scanned_file
   # the scanner source
-  attr_reader :scanner_source
-  
+  attr_reader :scanner_source  
 
 =begin rdoc
   * dir: The directory containing the files.
@@ -37,10 +38,14 @@ class RawImageDataset
   * any of the raw image files is not actually a RawImageFile => IndexError
   * series description, rmr number, or timestamp cannot be extracted from the first RawImageFile => IndexError
 =end
-  def initialize(directory, raw_image_files)
+  def initialize(directory, raw_image_files)    
     @directory = File.expand_path(directory)
     raise(IOError, "#{@directory} not found.") if not File.directory?(@directory)
-    raise(IOError, "No raw image files supplied.") if (raw_image_files.nil? or raw_image_files.empty?)
+    raise(IOError, "No raw image files supplied.") unless raw_image_files
+    
+    # If only a single raw_image_file was supplied, put it into an array for processing.
+    raw_image_files = [raw_image_files] if raw_image_files.class.to_s == "RawImageFile"
+
     raw_image_files.each do |im|
       raise(IndexError, im.to_s + " is not a RawImageFile") if im.class.to_s != "RawImageFile"
     end
@@ -94,7 +99,10 @@ at the visit level, or even higher when doing a whole file system scan.
      AND path = '#{@directory}' 
      AND timestamp LIKE '#{@timestamp.to_s.split(/\+|Z/).first}%'"
   end
-  
+
+=begin rdoc
+Returns a hash of attributes used for insertion into active record.
+=end  
   def attributes_for_active_record
     { :rmr => @rmr_number,
       :series_description => @series_description,
@@ -106,8 +114,35 @@ at the visit level, or even higher when doing a whole file system scan.
       :slices_per_volume => @raw_image_files.first.num_slices,
       :scanned_file => @scanned_file }
   end
-   
 
+=begin rdoc
+Implements an api for changing image datasets into usable nifti files.
+Pass in an output path and filename.
+The to3d code is applied as a mixed-in module.
+Returns the to3d command that creates the specified options.
+=end
+  def to_nifti(nifti_output_directory, nifti_filename, input_options = {} )
+    extend(UnknownImageDataset)
+    nifti_conversion_command, nifti_output_file = self.dataset_to_nifti(nifti_output_directory, nifti_filename, input_options)
+    return nifti_conversion_command, nifti_output_file
+  end
+
+=begin rdoc
+Uses to3d to create the nifti file as specified by to_nifti.
+
+Returns a path to the created dataset as a string if successful.
+=end
+  def to_nifti!(nifti_output_directory, nifti_filename, input_options = {} )
+    begin 
+      nifti_conversion_command, nifti_output_file = to_nifti(nifti_output_directory, nifti_filename, input_options)
+      puts nifti_conversion_command
+      system "#{nifti_conversion_command}"
+      raise(IOError, "Could not convert image dataset: #{@directory} to #{nifti_output_file}") unless $? == 0
+    rescue IOError => e
+      raise "-- Warning: #{e.message}"
+    end
+    return nifti_conversion_command, nifti_output_file
+  end
 
 =begin rdoc
 Returns a globbing wildcard that is used by to3D to gather files for
@@ -135,8 +170,15 @@ have more component files than shell commands can handle.
     end
   end
   
-private
+=begin rdoc
+
+=end
+  def escape_filename(filename)
+    filename.gsub(/\s|:/,"-" )
+  end
   
+private
+
   # Gets the earliest timestamp among the raw image files in this dataset.
   def get_earliest_timestamp
     @timestamp = (@raw_image_files.sort_by { |i| i.timestamp }).first.timestamp

@@ -45,7 +45,13 @@ class VisitRawDataDirectory
   attr_reader :scan_procedure_name
   # scanner source
   attr_reader :scanner_source
+  #
   attr_accessor :db
+  # Scan ID is the short name for the scan (tbiva018, tbiva018b)
+  attr_accessor :scanid
+  
+  PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits'
+
   
   # A new Visit instance needs to know the path to its raw data and scan_procedure name.  The scan_procedure
   # name must match a name in the database, if not a new scan_procedure entry will be inserted.
@@ -131,6 +137,38 @@ class VisitRawDataDirectory
       @db.close
       @db = nil
     end
+  end
+  
+  def default_preprocess_directory
+    return File.join(PREPROCESS_REPOSITORY_DIRECTORY, scan_procedure_name, scanid)
+  end
+  
+=begin rdoc
+Walks through the dicom datasets in this Scan Visit directory and performs naive file conversion to nifti format, which is useful for basic quality checking.
+Accepts an output directory as an optional argument, defaults to the system temp directory.
+Returns an array of the created nifti files.
+=end
+  def to_nifti!(output_directory = Dir.tmpdir)
+    flash "Converting raw data directory #{@visit_directory} to Niftis in #{output_directory}"
+    nifti_output_files = Array.new
+    
+    scan if @datasets.empty? 
+        
+    @datasets.each do |dataset|
+      nifti_output_path = output_directory
+      nifti_filename = "#{scanid}_#{dataset.escape_filename(dataset.series_description)}_#{File.basename(dataset.directory)}.nii"
+
+      Pathname.new(dataset.directory).all_dicoms do |dicom_files| 
+        nifti_conversion_command, nifti_output_file = dataset.to_nifti!(nifti_output_path, nifti_filename, :input_directory => @working_directory, :append_modality_directory => true)
+        nifti_output_files << nifti_output_file
+      end 
+    end
+    
+    return nifti_output_files
+  end
+  
+  def scanid
+    @scanid ||= File.basename(visit_directory).split('_')[0]
   end
   
   private
@@ -220,7 +258,9 @@ class VisitRawDataDirectory
     "SELECT * FROM image_datasets WHERE rmr = '#{ds.rmr_number}' AND path = '#{ds.directory}' AND timestamp = '#{ds.timestamp}'"
   end
   
-  # generates an sql insert statement to insert this visit with a given participant id
+=begin rdoc
+generates an sql insert statement to insert this visit with a given participant id
+=end
   def sql_insert_visit(scan_procedure_id=0)
     "INSERT INTO visits 
     (date, scan_procedure_id, scan_number, initials, rmr, radiology_outcome, notes, transfer_mri, transfer_pet,
@@ -240,6 +280,25 @@ class VisitRawDataDirectory
     end
     
     return RawImageDataset.new(original_parent_directory.to_s, [rawimagefile])
+  end
+  
+  def convert_dataset(rawfiles, original_parent_directory, nifti_output_directory)
+    puts "Converting scan session: #{original_parent_directory.to_s} using raw data file: #{rawfiles.first.basename}"
+    rawimagefiles = []
+
+    rawfiles.each do |rawfile|
+      begin
+        rawimagefiles << RawImageFile.new(rawfile.to_s)
+      rescue Exception => e
+        raise(IOError, "Trouble reading raw image file #{rawfile}. #{e}")
+      end
+    end
+    
+    dataset = RawImageDataset.new(original_parent_directory.to_s, rawimagefiles)
+    dataset.to_nifti()
+    
+    #return RawImageDataset.new(original_parent_directory.to_s, rawimagefiles)
+    
   end
   
   def get_visit_timestamp
@@ -325,6 +384,8 @@ class VisitRawDataDirectory
       return 'unknown.scan_procedure'
     end
   end
+  
+
 
 end
 
@@ -380,6 +441,28 @@ class Pathname
       end 
     end
   end
+  
+  def all_dicoms
+    local_copies = []
+    begin
+      
+      entries.each do |leaf|
+        branch = self + leaf
+        if leaf.to_s =~ /^I\.|\.dcm(\.bz2)?$|\.0[0-9]+(\.bz2)?$/
+          local_copies << branch.local_copy
+        end
+      end
+
+      yield local_copies
+
+    ensure
+      local_copies.each { |lc| lc.delete }
+    end
+    
+    return
+  end
+  
+  
   
   def local_copy
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
