@@ -27,7 +27,7 @@ class RawImageDataset
   # the file scanned
   attr_reader :scanned_file
   # the scanner source
-  attr_reader :scanner_source  
+  attr_reader :scanner_source
 
 =begin rdoc
   * dir: The directory containing the files.
@@ -122,7 +122,14 @@ The to3d code is applied as a mixed-in module.
 Returns the to3d command that creates the specified options.
 =end
   def to_nifti(nifti_output_directory, nifti_filename, input_options = {} )
-    extend(UnknownImageDataset)
+    
+    # Handle the business logic for choosing the right Nifti Builder here.
+    # Currently just extend the default unknown builder, since that's the only one that exists.
+    if true
+      nifti_output_directory = File.join(nifti_output_directory, 'unknown') if input_options[:append_modality_directory]
+      extend(UnknownImageDataset)
+    end
+    
     nifti_conversion_command, nifti_output_file = self.dataset_to_nifti(nifti_output_directory, nifti_filename, input_options)
     return nifti_conversion_command, nifti_output_file
   end
@@ -171,10 +178,10 @@ have more component files than shell commands can handle.
   end
   
 =begin rdoc
-
+Does same basic string replacements to ensure valid filenames.
 =end
   def escape_filename(filename)
-    filename.gsub(/\s|:/,"-" )
+    filename.mgsub([[/[\s\:\)\(]+/, "-"], [/\*/, "star"]])
   end
   
 private
@@ -187,3 +194,12 @@ private
 
 end
 #### END OF CLASS ####
+
+class String
+  def mgsub(key_value_pairs=[].freeze)
+    regexp_fragments = key_value_pairs.collect { |k,v| k }
+    gsub(Regexp.union(*regexp_fragments)) do |match|
+      key_value_pairs.detect { |k,v| k =~ match}[1]
+    end
+  end
+end

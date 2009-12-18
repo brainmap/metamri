@@ -71,7 +71,7 @@ temporary file.
   def initialize(pathtofile)
     # raise an error if the file doesn't exist
     absfilepath = File.expand_path(pathtofile)
-    raise(IOError, "File not found.") if not File.exists?(absfilepath)
+    raise(IOError, "File not found at #{absfilepath}.") if not File.exists?(absfilepath)
     @filename = File.basename(absfilepath)
     
     # try to read the header, raise an IOError if unsuccessful

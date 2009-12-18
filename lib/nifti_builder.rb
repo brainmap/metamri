@@ -15,7 +15,6 @@ module UnknownImageDataset
     else input_files = "#{Dir.tmpdir}/'#{glob}'"
     end
     
-    nifti_output_directory = File.join(nifti_output_directory, 'unknown') if input_options[:append_modality_directory]
     nifti_output_file = File.join(nifti_output_directory, nifti_filename)
     
     File.makedirs(nifti_output_directory) unless File.directory?(nifti_output_directory)

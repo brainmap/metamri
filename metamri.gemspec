@@ -5,14 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{metamri}
-  s.version = "0.1.0"
+  s.version = "0.1.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2009-12-08}
+  s.date = %q{2009-12-11}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
-  s.executables = ["import_study.rb", "import_visit.rb"]
+  s.executables = ["import_study.rb", "import_visit.rb", "alz.visit1.scan.log", "wrap140.scan.log"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -26,11 +26,13 @@ Gem::Specification.new do |s|
      "bin/import_visit.rb",
      "lib/metamri.rb",
      "lib/mysql_tools.rb",
+     "lib/nifti_builder.rb",
      "lib/raw_image_dataset.rb",
      "lib/raw_image_file.rb",
      "lib/series_description_parameters.rb",
      "lib/visit_raw_data_directory.rb",
      "metamri.gemspec",
+     "test/nifti_builder_spec.rb",
      "test/raw_image_dataset_test.rb",
      "test/raw_image_file_test.rb",
      "test/visit_duplication_test.rb",
@@ -45,7 +47,8 @@ Gem::Specification.new do |s|
     "test/raw_image_dataset_test.rb",
      "test/raw_image_file_test.rb",
      "test/visit_duplication_test.rb",
-     "test/visit_test.rb"
+     "test/visit_test.rb",
+     "test/nifti_builder_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
