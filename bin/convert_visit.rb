@@ -42,7 +42,7 @@ require 'logger'
 #   
 #
 def convert_visit(raw_directory, scan_procedure_codename, output_directory = nil)
-  log = Logger.new(File.basename(raw_directory))  
+  $LOG = Logger.new(File.join(Dir.tmpdir, File.basename(raw_directory))  
   v = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
   puts "+++ Converting #{v.visit_directory} as part of #{v.scan_procedure_name} +++"
   output_directory = output_directory ||= v.default_preprocess_directory
@@ -53,8 +53,8 @@ def convert_visit(raw_directory, scan_procedure_codename, output_directory = nil
   rescue Exception => e
     puts "There was a problem scanning a dataset in #{v.visit_directory}... skipping."
     puts "Exception message: #{e.message}"
-    log.error "There was a problem scanning a dataset in #{v.visit_directory}... skipping."
-    log.error "Exception message: #{e.message}"
+    $LOG.error "There was a problem scanning a dataset in #{v.visit_directory}... skipping."
+    $LOG.error "Exception message: #{e.message}"
   ensure
     v = nil
   end

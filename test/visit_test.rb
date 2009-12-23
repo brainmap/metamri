@@ -10,7 +10,7 @@ require 'logger'
 
 class RawImageFileTest < Test::Unit::TestCase
   DBFILE = '/Users/kris/projects/TransferScans/db/development.sqlite3'
-  LOG = Logger.new('visit_test.log', shift_age = 7, shift_size = 1048576)
+  $LOG = Logger.new('visit_test.log', shift_age = 7, shift_size = 1048576)
   STUDIES = [
     # Pathname.new('/Data/vtrak1/raw/alz_2000'),
     # Pathname.new('/Data/vtrak1/raw/alz_2000'),
@@ -65,8 +65,8 @@ class RawImageFileTest < Test::Unit::TestCase
         rescue Exception => e
           puts "There was a problem scanning a dataset in #{visitdir}... skipping."
           puts "Exception message: #{e.message}"
-          LOG.error "There was a problem scanning a dataset in #{visitdir}... skipping."
-          LOG.error "Exception message: #{e.message}"
+          $LOG.error "There was a problem scanning a dataset in #{visitdir}... skipping."
+          $LOG.error "Exception message: #{e.message}"
         ensure
           v = nil
         end

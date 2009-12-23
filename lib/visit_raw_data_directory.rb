@@ -17,6 +17,7 @@ def flash(msg)
   printf "\t%s\n", Time.now
   puts "+" * 120
   puts
+  $LOG.info msg if $LOG
 end
 
 
