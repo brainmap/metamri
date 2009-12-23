@@ -59,8 +59,9 @@ describe "Convert Unknown Dicoms to Nifti Files" do
       nifti_conversion_command.should == "to3d -session /tmp -prefix 001.nii /tmp/'*.dcm'"
 
       
+      nifti_input_path = File.dirname(dicom_files.first)
       nifti_conversion_command, nifti_output_file = @dataset.to_nifti(nifti_output_path, nifti_filename, :dicom_files => dicom_files)
-      nifti_conversion_command.should == "to3d -session /tmp -prefix 001.nii #{Dir.tmpdir}/I0001.dcm #{Dir.tmpdir}/I0002.dcm #{Dir.tmpdir}/I0003.dcm #{Dir.tmpdir}/I0004.dcm #{Dir.tmpdir}/I0005.dcm #{Dir.tmpdir}/I0006.dcm #{Dir.tmpdir}/I0007.dcm #{Dir.tmpdir}/I0008.dcm #{Dir.tmpdir}/I0009.dcm #{Dir.tmpdir}/I0010.dcm #{Dir.tmpdir}/I0011.dcm #{Dir.tmpdir}/I0012.dcm #{Dir.tmpdir}/I0013.dcm #{Dir.tmpdir}/I0014.dcm #{Dir.tmpdir}/I0015.dcm"
+      nifti_conversion_command.should == "to3d -session /tmp -prefix 001.nii #{dicom_files.each {|dicom| dicom}.join(" ")}"
 
     end
   end
