@@ -181,7 +181,7 @@ have more component files than shell commands can handle.
 Does same basic string replacements to ensure valid filenames.
 =end
   def escape_filename(filename)
-    filename.mgsub([[/[\s\:\)\(]+/, "-"], [/\*/, "star"]])
+    filename.mgsub([[/[\s\:\)\(\/]+/, "-"], [/\*/, "star"]])
   end
   
 private

@@ -159,7 +159,8 @@ Returns an array of the created nifti files.
       nifti_filename = "#{scanid}_#{dataset.escape_filename(dataset.series_description)}_#{File.basename(dataset.directory)}.nii"
 
       Pathname.new(dataset.directory).all_dicoms do |dicom_files| 
-        nifti_conversion_command, nifti_output_file = dataset.to_nifti!(nifti_output_path, nifti_filename, :input_directory => @working_directory, :append_modality_directory => true)
+        nifti_input_path = File.dirname(dicom_files.first)
+        nifti_conversion_command, nifti_output_file = dataset.to_nifti!(nifti_output_path, nifti_filename, :input_directory => nifti_input_path, :append_modality_directory => true)
         nifti_output_files << nifti_output_file
       end 
     end
@@ -444,19 +445,21 @@ class Pathname
   
   def all_dicoms
     local_copies = []
-    begin
+    Dir.mktmpdir do |tempdir|
+      begin
       
-      entries.each do |leaf|
-        branch = self + leaf
-        if leaf.to_s =~ /^I\.|\.dcm(\.bz2)?$|\.0[0-9]+(\.bz2)?$/
-          local_copies << branch.local_copy
+        entries.each do |leaf|
+          branch = self + leaf
+          if leaf.to_s =~ /^I\.|\.dcm(\.bz2)?$|\.0[0-9]+(\.bz2)?$/
+            local_copies << branch.local_copy(tempdir)
+          end
         end
+
+        yield local_copies
+
+      ensure
+        local_copies.each { |lc| lc.delete }
       end
-
-      yield local_copies
-
-    ensure
-      local_copies.each { |lc| lc.delete }
     end
     
     return
@@ -464,9 +467,9 @@ class Pathname
   
   
   
-  def local_copy
+  def local_copy(tempdir = Dir.tmpdir)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
-    tmpfile = File.join(Dir.tmpdir, tfbase)
+    tmpfile = File.join(tempdir, tfbase)
     if self.to_s =~ /\.bz2$/
       `bunzip2 -k -c #{self.to_s} >> #{tmpfile}`
     else
