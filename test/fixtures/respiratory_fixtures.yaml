@@ -1,0 +1,11 @@
+fMRI ASSET RUN 1:
+  cardiac_data: ECGData_epiRT_0210200914_22_58
+  respiratory_data: RespData_epiRT_0210200914_22_58
+  cardiac_trigger: TrigEcg_epiRT_0210200914_22_58
+  respiratory_trigger: TrigResp_epiRT_0210200914_22_58
+
+fMRI ASSET RUN 2:
+  cardiac_data: ECGData_epiRT_0210200914_22_58
+  respiratory_data: RespData_epiRT_0210200914_22_58
+  cardiac_trigger: TrigEcg_epiRT_0210200914_22_58
+  respiratory_trigger: TrigResp_epiRT_0210200914_22_58

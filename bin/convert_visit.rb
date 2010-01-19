@@ -42,7 +42,7 @@ require 'logger'
 #   
 #
 def convert_visit(raw_directory, scan_procedure_codename, output_directory = nil)
-  $LOG = Logger.new(File.join(Dir.tmpdir, File.basename(raw_directory))  
+  $LOG = Logger.new(File.join(Dir.tmpdir, File.basename(raw_directory)))  
   v = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
   puts "+++ Converting #{v.visit_directory} as part of #{v.scan_procedure_name} +++"
   output_directory = output_directory ||= v.default_preprocess_directory

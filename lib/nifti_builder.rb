@@ -7,6 +7,10 @@ Builds Nifti files from Dicoms.
 TO3D_CMD = 'to3d'
 
 module UnknownImageDataset
+  # Always set AFNI GE DICOM Fix to "No" before conversion with to3d.
+  ENV['AFNI_SLICE_SPACING_IS_GAP'] == "NO"
+
+  
   def dataset_to_nifti(nifti_output_directory, nifti_filename, input_options = {} )
     if input_options.has_key?(:dicom_files)
       input_files = input_options[:dicom_files].each {|file| file.to_s }.join(' ')

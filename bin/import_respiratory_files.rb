@@ -11,7 +11,7 @@
 # == Author
 #   
 # == Copyright
-#   Copyright (c) 2009 WADRC Imaging Core.
+#   Copyright (c) 2010 WADRC Imaging Core.
 #
 
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
@@ -62,6 +62,19 @@ def match_respiratory_files(path)
   
   return visit_epi_files.zip(timestamps)
 end
+
+def create_spec
+  spec_file = 'respiratory_fixtures.yaml'
+  
+  runs = YAML::load_file(spec_file)
+  
+  runs.each do |run|
+      options = [['--card', run['cardiac_data']], ['--resp', run['respiratory_data']], ['--ox', run['cardiac_trigger']]]
+      system("PhysioNoise.py #{options.flatten.join(" ")}")
+  end
+  
+end
+
 
 if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
   RDoc::usage() if (ARGV[0] == '-h')
