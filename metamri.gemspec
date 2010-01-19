@@ -9,10 +9,10 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2009-12-22}
+  s.date = %q{2010-01-19}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
-  s.executables = ["convert_visit.rb", "import_study.rb", "import_visit.rb"]
+  s.executables = ["convert_visit.rb", "import_study.rb", "import_visit.rb", "import_respiratory_files.rb"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
      "Rakefile",
      "VERSION",
      "bin/convert_visit.rb",
+     "bin/import_respiratory_files.rb",
      "bin/import_study.rb",
      "bin/import_visit.rb",
      "lib/metamri.rb",
@@ -33,6 +34,7 @@ Gem::Specification.new do |s|
      "lib/series_description_parameters.rb",
      "lib/visit_raw_data_directory.rb",
      "metamri.gemspec",
+     "test/fixtures/respiratory_fixtures.yaml",
      "test/nifti_builder_spec.rb",
      "test/raw_image_dataset_test.rb",
      "test/raw_image_file_test.rb",
