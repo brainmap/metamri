@@ -5,14 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{metamri}
-  s.version = "0.1.7"
+  s.version = "0.1.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2010-01-19}
+  s.date = %q{2010-01-20}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
-  s.executables = ["convert_visit.rb", "import_study.rb", "import_visit.rb", "import_respiratory_files.rb"]
+  s.executables = ["import_study.rb", "import_visit.rb", "convert_visit.rb", "import_respiratory_files.rb"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
