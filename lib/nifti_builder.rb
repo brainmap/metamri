@@ -8,7 +8,7 @@ TO3D_CMD = 'to3d'
 
 module UnknownImageDataset
   # Always set AFNI GE DICOM Fix to "No" before conversion with to3d.
-  ENV['AFNI_SLICE_SPACING_IS_GAP'] == "NO"
+  ENV['AFNI_SLICE_SPACING_IS_GAP'] = "NO"
 
   
   def dataset_to_nifti(nifti_output_directory, nifti_filename, input_options = {} )
