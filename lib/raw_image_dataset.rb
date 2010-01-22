@@ -146,7 +146,7 @@ Returns a path to the created dataset as a string if successful.
       system "#{nifti_conversion_command}"
       raise(IOError, "Could not convert image dataset: #{@directory} to #{nifti_output_file}") unless $? == 0
     rescue IOError => e
-      raise "-- Warning: #{e.message}"
+      $LOG.warn "-- Warning: #{e.message}"
     end
     return nifti_conversion_command, nifti_output_file
   end

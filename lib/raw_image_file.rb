@@ -249,14 +249,14 @@ used to read it.
 Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
 =end
   def read_header(absfilepath)
-    header = `#{DICOM_HDR} #{absfilepath} 2> /dev/null`
+    header = `#{DICOM_HDR} '#{absfilepath}' 2> /dev/null`
     #header = `#{DICOM_HDR} #{absfilepath}`
     if ( header.index("ERROR") == nil and 
          header.chomp != "" and 
          header.length > MIN_HDR_LENGTH )
       return [ header, DICOM_HDR ]
     end
-    header = `#{RDGEHDR} #{absfilepath} 2> /dev/null`
+    header = `#{RDGEHDR} '#{absfilepath}' 2> /dev/null`
     #header = `#{RDGEHDR} #{absfilepath}`
     if ( header.chomp != "" and
          header.length > MIN_HDR_LENGTH )

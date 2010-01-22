@@ -472,7 +472,7 @@ class Pathname
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tmpfile = File.join(tempdir, tfbase)
     if self.to_s =~ /\.bz2$/
-      `bunzip2 -k -c #{self.to_s} >> #{tmpfile}`
+      `bunzip2 -k -c '#{self.to_s}' >> '#{tmpfile}'`
     else
       FileUtils.cp(self.to_s, tmpfile)
     end
