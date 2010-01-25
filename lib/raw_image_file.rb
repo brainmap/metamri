@@ -79,7 +79,7 @@ temporary file.
       @hdr_data, @hdr_reader = read_header(absfilepath)
       #puts "@hdr_data: #{@hdr_data}; @hdr_reader: #{@hdr_reader}"
     rescue Exception => e
-      raise(IOError, "Header not readable. #{e}")
+      raise(IOError, "Header not readable for file #{@filename}. #{e}")
     end
     
     # file type is based on file name but only if the header was read successfully
@@ -90,7 +90,7 @@ temporary file.
     begin
       import_hdr
     rescue Exception => e
-      raise(IOError, "Header import failed. #{e}")
+      raise(IOError, "Header import failed for file #{@filename}. #{e}")
     end
     
     # deallocate the header data to save memory space.

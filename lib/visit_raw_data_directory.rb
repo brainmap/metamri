@@ -157,7 +157,7 @@ Returns an array of the created nifti files.
         
     @datasets.each do |dataset|
       nifti_output_path = output_directory
-      nifti_filename = "#{scanid}_#{dataset.escape_filename(dataset.series_description)}_#{File.basename(dataset.directory)}.nii"
+      nifti_filename = "#{scanid}_#{dataset.series_description.escape_filename}_#{File.basename(dataset.directory).escape_filename}.nii"
 
       Pathname.new(dataset.directory).all_dicoms do |dicom_files| 
         nifti_input_path = File.dirname(dicom_files.first)
@@ -470,6 +470,7 @@ class Pathname
   
   def local_copy(tempdir = Dir.tmpdir)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
+    tfbase.escape_filename
     tmpfile = File.join(tempdir, tfbase)
     if self.to_s =~ /\.bz2$/
       `bunzip2 -k -c '#{self.to_s}' >> '#{tmpfile}'`
