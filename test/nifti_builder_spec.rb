@@ -2,44 +2,71 @@ $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'rubygems'
 require 'spec'
+require 'fileutils'
+require 'tmpdir'
+require 'metamri/core_additions'
 require 'visit_raw_data_directory'
 require 'raw_image_dataset'
 require 'raw_image_file'
 
-describe "Convert Unknown Dicoms to Nifti Files" do
+VISIT_FIXTURE_SRC = '/Data/vtrak1/raw/johnson.tbi-va.visit1/tbiva018b_9336_12022009'
+VISIT_FIXTURE = File.join(Dir.tmpdir, 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009')
+VISIT_FIXTURE_UNZIPPED = File.join(Dir.tmpdir, 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009_unzipped')
+
+
+
+describe "Convert Unknown Dicoms to Nifti Files" do  
+  before(:all) do
+    # Initialize a local scratch directory to hold fixtures for testing if it doesn't already exist.
+    unless File.directory?(VISIT_FIXTURE)
+      FileUtils.mkdir_p(File.dirname(VISIT_FIXTURE))
+      FileUtils.cp_r(VISIT_FIXTURE_SRC, VISIT_FIXTURE)
+    end
+    unless File.directory?(VISIT_FIXTURE_UNZIPPED)
+      FileUtils.cp_r(VISIT_FIXTURE, VISIT_FIXTURE_UNZIPPED)
+      `find #{VISIT_FIXTURE_UNZIPPED} -name '*.bz2' -exec bunzip2 {} \\;`
+    end
+  end
   
   before(:each) do
-    @visit = VisitRawDataDirectory.new(File.join(File.dirname(__FILE__), 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009'), 'johnson.tbi-va.visit1')
-    @dataset = RawImageDataset.new(
-      File.join(File.dirname(__FILE__), 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009/001'), 
-      [RawImageFile.new(File.join(File.dirname(__FILE__), 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009/001/I0001.dcm'))]
+    @visit = VisitRawDataDirectory.new(VISIT_FIXTURE, 'johnson.tbi-va.visit1')
+    Pathname.new(File.join(@visit.visit_directory, '001')).first_dicom do |fd|
+      @dataset = RawImageDataset.new(File.join(VISIT_FIXTURE, '001'), 
+      [RawImageFile.new(fd)])
+    end
+    
+    @visit_unzipped = VisitRawDataDirectory.new(VISIT_FIXTURE_UNZIPPED, 'johnson.tbi-va.visit1')
+    @dataset_unzipped = RawImageDataset.new(
+      File.join(VISIT_FIXTURE_UNZIPPED, '001'), 
+      [RawImageFile.new(File.join(VISIT_FIXTURE_UNZIPPED, '001/I0001.dcm'))]
     )
+    
     @test_niftis = Array.new
     @output_directories = Array.new
   end
 
   it "should Convert an anatomical from dicom to nifti using original, unzipped files." do
-    @dataset.to_nifti('/tmp/', 'filename.nii', :input_directory => @dataset.directory)[0].should == "to3d -session /tmp/ -prefix filename.nii #{@dataset.directory}/'*.dcm'"
-    nifti_conversion_command, nifti_output_file = @dataset.to_nifti!('/tmp/', 'filename.nii', :input_directory => @dataset.directory)
-    nifti_conversion_command.should == "to3d -session /tmp/ -prefix filename.nii #{@dataset.directory}/'*.dcm'"
+    @dataset_unzipped.to_nifti('/tmp/', 'filename.nii', :input_directory => @dataset_unzipped.directory)[0].should == "to3d -session /tmp/ -prefix filename.nii #{@dataset_unzipped.directory}/'*.dcm'"
+    nifti_conversion_command, nifti_output_file = @dataset_unzipped.to_nifti!('/tmp/', 'filename.nii', :input_directory => @dataset_unzipped.directory)
+    nifti_conversion_command.should == "to3d -session /tmp/ -prefix filename.nii #{@dataset_unzipped.directory}/'*.dcm'"
     @test_niftis << nifti_output_file
     @output_directories << '/tmp'
   end
   
   it "should convert all anatomicals in a visit raw directory using original, unzipped files." do
-    @visit.scan
+    @visit_unzipped.scan
     
-    @visit.datasets.each do |ds|
+    @visit_unzipped.datasets.each do |ds|
       begin 
-        nifti_filename = "#{@visit.scanid}_#{ds.escape_filename(ds.series_description)}_#{File.basename(ds.directory)}.nii"
-        nifti_conversion_commmand, nifti_output_file = ds.to_nifti!(File.join(Dir.tmpdir, @visit.default_preprocess_directory), nifti_filename, :input_directory => ds.directory, :append_modality_directory => true )
+        nifti_filename = "#{@visit_unzipped.scanid}_#{ds.series_description.escape_filename}_#{File.basename(ds.directory)}.nii"
+        nifti_conversion_commmand, nifti_output_file = ds.to_nifti!(File.join(Dir.tmpdir, @visit_unzipped.default_preprocess_directory), nifti_filename, :input_directory => ds.directory, :append_modality_directory => true )
         @test_niftis << nifti_output_file
       rescue IOError => e
         puts "-- Error: #{e.message}"
       end
     end
     
-    @output_directories = File.join(@visit.default_preprocess_directory, 'unknown')
+    @output_directories = File.join(@visit_unzipped.default_preprocess_directory, 'unknown')
   end
   
   it "should convert all anatomicals in a visit raw directory using local copy." do
