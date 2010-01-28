@@ -182,6 +182,20 @@ have more component files than shell commands can handle.
     @file_count ||= Dir.open(@directory).reject{ |branch| /^\./.match(branch) }.length
   end
   
+  # Creates an Hirb Table for pretty output of dataset info.
+  # It takes an array of either RawImageDatasets or RawImageDatasetResources
+  def self.to_table(datasets)
+    if datasets.first.class.to_s == "RawImageDatasetResource"
+      datasets = datasets.map { |ds| ds.to_metamri_image_dataset }
+    end
+    
+    Hirb::Helpers::AutoTable.render(
+      datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.directory)] }, 
+      :headers => { :directory_basename => 'Directory', :series_description => 'Series Description', :file_count => 'File Count'}, 
+      :fields => [:directory_basename, :series_description, :file_count]
+    )
+      
+  end
 private
 
   # Gets the earliest timestamp among the raw image files in this dataset.

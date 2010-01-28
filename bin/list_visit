@@ -43,7 +43,7 @@ require 'logger'
 
 def list_visit(raw_directory, scan_procedure_codename)
   $LOG = Logger.new(STDOUT)  
-  $LOG.level = Logger::WARN
+  $LOG.level = Logger::INFO
   visit = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
 
   begin
