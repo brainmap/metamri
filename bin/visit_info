@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+#
+# == Synopsis 
+#   A simple utility for converting all the dicom datasets in a directory into niftis.  Defaults to the current
+#   default preprocessed repository.
+#
+# == Examples
+#   convert_visit.rb /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009 ries.aware.visit1 
+
+#
+# == Usage 
+#   convert_visit.rb <raw_data_directory> <scan_procedure_codename> 
+#
+#   For help use: import_visit.rb -h
+#
+# == Options
+#   -h, --help          Displays help message
+#   -v, --visit         Visit raw data directory, absolute path
+#   -p, --scan_procedure      scan_procedure codename, e.g. johnson.alz.visit1
+#
+# == Author
+#   
+#
+# == Copyright
+#   Copyright (c) 2009 WADRC Imaging Core.
+#
+
+$:.unshift File.join(File.dirname(__FILE__),'..','lib')
+
+require 'metamri'
+require 'pathname'
+require 'rdoc/usage'
+require 'logger'
+
+# == Function
+#   
+# 
+# == Usage
+#   
+#
+# == Example
+#
+
+def visit_info(raw_directory, scan_procedure_codename)
+  $LOG = Logger.new(STDOUT)  
+  $LOG.level = Logger::WARN
+  visit = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
+
+  begin
+    visit.scan
+    visit.to_s
+  rescue IndexError => e
+    $LOG.error "Are you sure #{raw_directory} is a valid raw visit directory?"
+    raise e
+  rescue Exception => e
+    $LOG.error "There was a problem scanning a dataset in #{visit.visit_directory}... skipping."
+    $LOG.error "Exception message: #{e.message}"
+    raise e
+  end
+
+end
+
+if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
+  RDoc::usage() if (ARGV[0] == '-h')
+  # Default to scanning the current directory if no argument was given.
+  raw_directory = ARGV[0] ||= File.expand_path('.')
+
+  # This is required for now, will be inferred from path in the future.
+  scan_procedure_codename = ARGV[1] 
+  
+  # output_directory = ARGV[2] ? ARGV[2] : nil
+
+  visit_info(raw_directory, scan_procedure_codename)
+end

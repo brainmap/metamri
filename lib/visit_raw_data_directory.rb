@@ -7,6 +7,7 @@ require 'fileutils'
 require 'raw_image_file'
 require 'raw_image_dataset'
 require 'sqlite3'
+require 'logger'
 
 
 # A shared function that displays a message and the date/time to standard output.
@@ -65,6 +66,7 @@ class VisitRawDataDirectory
     @rmr_number = nil
     @scan_procedure_name = scan_procedure_name.nil? ? get_scan_procedure_based_on_raw_directory : scan_procedure_name
     @db = nil
+    initialize_log
   end
   
   # Recursively walks the filesystem inside the visit directory.  At each subdirectory, any and all
@@ -72,7 +74,7 @@ class VisitRawDataDirectory
   # @datasets will hold an array of ImageDataset instances.  Setting the rmr here can raise an 
   # exception if no valid rmr is found in the datasets, be prepared to catch it.
   def scan
-    flash "Scanning visit raw data directory #{@visit_directory}"
+    flash "Scanning visit raw data directory #{@visit_directory}" if $LOG.level <= Logger::DEBUG
     d = Pathname.new(@visit_directory)
     d.each_subdirectory do |dd|
       begin 
@@ -87,7 +89,7 @@ class VisitRawDataDirectory
       @timestamp = get_visit_timestamp
       @rmr_number = get_rmr_number
       @scanner_source = get_scanner_source
-      flash "Completed scanning #{@visit_directory}"
+      flash "Completed scanning #{@visit_directory}" if $LOG.level <= Logger::DEBUG
     else
       raise(IndexError, "No datasets could be scanned for directory #{@visit_directory}")
     end
@@ -172,6 +174,34 @@ Returns an array of the created nifti files.
   def scanid
     @scanid ||= File.basename(visit_directory).split('_')[0]
   end
+  
+  def to_s
+    puts; @visit_directory.length.times { print "-" }; puts
+    puts "#{@visit_directory}"
+    puts "#{@rmr_number} - #{@scanner_source}"
+    puts "#{@scan_procedure_name}"
+    puts "#{@scanid}"
+    puts Hirb::Helpers::AutoTable.render(
+      @datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.directory)] }, 
+      :headers => { :directory_basename => 'Directory', :series_description => 'Series Description', :file_count => 'File Count'}, 
+      :fields => [:directory_basename, :series_description, :file_count]
+    )
+    return
+  rescue TypeError => e
+    # Header Line
+    printf "\t%-15s %-30s [%s]\n", "Directory", "Series Description", "Files"
+    
+    # Dataset Lines
+    @datasets.sort_by{|ds| [ds.timestamp, File.basename(ds.directory)] }.each do |dataset|
+      printf "\t%-15s %-30s [%s]\n", File.basename(dataset.directory), dataset.series_description, dataset.file_count
+    end
+    
+    # Reminder Line
+    puts "(This would be much prettier if you installed hirb.)"
+    
+    return
+  end
+  
   
   private
   
@@ -273,7 +303,7 @@ generates an sql insert statement to insert this visit with a given participant 
   end
   
   def import_dataset(rawfile, original_parent_directory)
-    puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}"
+    puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
     
     begin
       rawimagefile = RawImageFile.new(rawfile.to_s)
@@ -387,7 +417,13 @@ generates an sql insert statement to insert this visit with a given participant 
     end
   end
   
-
+  def initialize_log
+    # If a log hasn't been created, catch that here and go to STDOUT.
+    unless $LOG
+      $LOG = Logger.new(STDOUT)
+      $LOG.level = Logger::DEBUG
+    end
+  end
 
 end
 
@@ -465,8 +501,6 @@ class Pathname
     
     return
   end
-  
-  
   
   def local_copy(tempdir = Dir.tmpdir)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s

@@ -177,13 +177,21 @@ have more component files than shell commands can handle.
     end
   end
   
-
+  
+  def file_count
+    @file_count ||= Dir.open(@directory).reject{ |branch| /^\./.match(branch) }.length
+  end
   
 private
 
   # Gets the earliest timestamp among the raw image files in this dataset.
   def get_earliest_timestamp
     @timestamp = (@raw_image_files.sort_by { |i| i.timestamp }).first.timestamp
+  end
+  
+  # Directory Basename is hardcoded for Pretty Printing using Hirb, which takes symbols as method names for its columns.
+  def directory_basename
+    File.basename(@directory)
   end
 
 end

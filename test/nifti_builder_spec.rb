@@ -31,8 +31,10 @@ describe "Convert Unknown Dicoms to Nifti Files" do
   before(:each) do
     @visit = VisitRawDataDirectory.new(VISIT_FIXTURE, 'johnson.tbi-va.visit1')
     Pathname.new(File.join(@visit.visit_directory, '001')).first_dicom do |fd|
-      @dataset = RawImageDataset.new(File.join(VISIT_FIXTURE, '001'), 
-      [RawImageFile.new(fd)])
+      @dataset = RawImageDataset.new(
+        File.join(VISIT_FIXTURE, '001'), 
+        [RawImageFile.new(fd)]
+      )
     end
     
     @visit_unzipped = VisitRawDataDirectory.new(VISIT_FIXTURE_UNZIPPED, 'johnson.tbi-va.visit1')
