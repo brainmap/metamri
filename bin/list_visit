@@ -41,7 +41,7 @@ require 'logger'
 # == Example
 #
 
-def visit_info(raw_directory, scan_procedure_codename)
+def list_visit(raw_directory, scan_procedure_codename)
   $LOG = Logger.new(STDOUT)  
   $LOG.level = Logger::WARN
   visit = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
@@ -70,5 +70,5 @@ if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
   
   # output_directory = ARGV[2] ? ARGV[2] : nil
 
-  visit_info(raw_directory, scan_procedure_codename)
+  list_visit(raw_directory, scan_procedure_codename)
 end
