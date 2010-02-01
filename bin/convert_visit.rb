@@ -36,7 +36,8 @@ require 'logger'
 #   
 # 
 # == Usage
-#   
+#
+#   convert_visit.rb /Data/vtrak1/raw/ries.aware.visit1/awr001_9999_010110/ ries.aware.visit1 /tmp/awr001
 #
 # == Example
 #   
@@ -66,9 +67,13 @@ if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
   RDoc::usage() if (ARGV[0] == '-h')
   raw_directory = ARGV[0]
 
-  # This is required for now, will be inferred from path in the future.
-  scan_procedure_codename = ARGV[1] 
+
+  # Optional Scan Procdedure Codename
+  # If not given this is inferred by VisitRawDataDirectory#get_scan_procedure_based_on_raw_directory
+  scan_procedure_codename = ARGV[1] ? ARGV[1] : nil
   
+  # Optional Output Directory
+  # If not given this is inferred by  VisitRawDataDirectory#default_preprocess_directory
   output_directory = ARGV[2] ? ARGV[2] : nil
 
   convert_visit(raw_directory, scan_procedure_codename, output_directory)
