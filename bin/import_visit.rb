@@ -1,10 +1,12 @@
 #!/usr/bin/env ruby
 #
 # == Synopsis 
-#   A simple utility for importing imaging data collected during one visit into the WADRC Data Tools web
-#   application.  Data from a visit is contained in one big directory that may have many subdirectories.
-#   Each individual imaging scan may be composed of an entire directory of dicom files or one single p-file.
-#   This utility scans through all of the image data sets and retrieved meta-data about the scans from their
+#   A simple utility for importing imaging data collected during one 
+#   visit into the WADRC Data Tools web application.  Data from a visit
+#   is contained in one large directory that may have many subdirectories.
+#   Each individual imaging scan may be composed of an entire directory 
+#   of dicom files or one single p-file.  This utility scans through all
+#   of the image data sets and retrieved meta-data about the scans from their
 #   header information.
 #
 # == Examples

@@ -12,11 +12,13 @@ require 'logger'
 
 # A shared function that displays a message and the date/time to standard output.
 def flash(msg)
+  flash_size =msg.size + 20
+  
   puts
-  puts "+" * 120
+  puts "+" * flash_size
   printf "\t%s\n", msg
   printf "\t%s\n", Time.now
-  puts "+" * 120
+  puts "+" * flash_size
   puts
   $LOG.debug msg if $LOG
 end
@@ -38,21 +40,25 @@ class VisitRawDataDirectory
   # The absolute path of the visit directory, as a string.
   attr_reader :visit_directory
   # An array of :RawImageDataset objects acquired during this visit.
-  attr_reader :datasets
+  attr_accessor :datasets
   # Timestamp for this visit, obtained from the first :RawImageDataset
-  attr_reader :timestamp
+  attr_accessor :timestamp
   # RMR number for this visit.
-  attr_reader :rmr_number
+  attr_accessor :rmr_number
   # scan_procedure name
   attr_reader :scan_procedure_name
   # scanner source
-  attr_reader :scanner_source
+  attr_accessor :scanner_source
   #
   attr_accessor :db
   # Scan ID is the short name for the scan (tbiva018, tbiva018b)
   attr_accessor :scanid
+  # The id of the visit to be used when doing reverse-lookup in data panda.
+  attr_accessor :database_id
   
   PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits'
+  # DATAPANDA_SERVER = 'http://localhost:3000'
+  DATAPANDA_SERVER = 'http://144.92.151.228'
 
   
   # A new Visit instance needs to know the path to its raw data and scan_procedure name.  The scan_procedure

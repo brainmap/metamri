@@ -1,10 +1,7 @@
 require 'active_resource'
 
-#DATAPANDA_SERVER = 'http://144.92.151.228'
-DATAPANDA_SERVER = 'http://localhost:3000'
-
 class RawImageDatasetResource < ActiveResource::Base
-  self.site = "http://localhost:3000"
+  self.site = VisitRawDataDirectory::DATAPANDA_SERVER
   self.element_name = "image_dataset"
   
   # Creates a Backwards Transfer to go from ActiveRecord to Metamri Classes
