@@ -35,26 +35,40 @@ $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'metamri'
 require 'pathname'
 require 'rdoc/usage'
-require 'logger'
+# require 'logger'
 
 def list_visit(raw_directory)
-  $LOG = Logger.new(STDOUT)  
-  $LOG.level = Logger::INFO
-  visit = VisitRawDataDirectory.new(raw_directory)
-  # visit = VisitRawDataDirectoryResource.find(:all, :from => '/visits/found.xml', :params => {:visit_search => {:rmr => 'rmr'}})
-
-  begin
-    visit.scan
-    # visit.datasets = RawImageDatasetResource.find(:all, :from => "/visits/#{visit.database_id}/image_datasets.xml" )
-  rescue IndexError => e
-    $LOG.error "Are you sure #{raw_directory} is a valid raw visit directory?"
-    raise e
-  rescue Exception => e
-    $LOG.error "There was a problem scanning a dataset in #{visit.visit_directory}... skipping."
-    $LOG.error "Exception message: #{e.message}"
-    raise e
-  end
+  # $LOG = Logger.new(STDOUT)
+  # $LOG.level = Logger::INFO
   
+  # First try to lookup Visit and Datasets through active_resource
+  # Then fall back to scanning them fresh.
+  
+  begin
+    # raise
+    visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => raw_directory}})
+    raise "Could not lookup visit using path." unless visit
+    raise "Incorrect visit found." unless visit.path == raw_directory
+  rescue Exception => e
+    puts e
+    visit = VisitRawDataDirectory.new(raw_directory)
+    begin
+      visit.scan
+    rescue IndexError => e
+      $LOG.error "Are you sure #{raw_directory} is a valid raw visit directory?"
+      raise e
+    end
+  end
+
+  # begin
+  # rescue Exception => e
+  #   $LOG.error "There was a problem scanning a dataset in #{visit.visit_directory}... skipping."
+  #   $LOG.error "Exception message: #{e.message}"
+  #   raise e
+  # end
+  
+  # Visit is Either a RawVisitDataDirectory or a RawVisitDataDirectoryResource
+  # Either can handle printing to_s
   visit.to_s
 
 end
@@ -63,7 +77,8 @@ if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
   RDoc::usage() if (ARGV[0] == '-h')
 
   # Default to scanning the current directory if no argument was given.
-  raw_directory = ARGV[0] ||= File.expand_path('.')
+  raw_directory = ARGV[0] ||= Dir.pwd
+  raw_directory = File.expand_path(raw_directory)
 
   list_visit(raw_directory)
 end

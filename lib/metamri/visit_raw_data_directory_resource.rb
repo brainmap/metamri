@@ -1,6 +1,7 @@
-require 'active_resource'
+$:.unshift File.dirname(__FILE__)
 
-DATAPANDA_SERVER = 'http://144.92.151.228'
+require 'active_resource'
+require 'raw_image_dataset_resource'
 
 class VisitRawDataDirectoryResource < ActiveResource::Base
   self.site = VisitRawDataDirectory::DATAPANDA_SERVER
@@ -17,4 +18,15 @@ class VisitRawDataDirectoryResource < ActiveResource::Base
     @visit.database_id = id
     return @visit
   end
+  
+  def datasets
+    @datasets ||= RawImageDatasetResource.find(:all, :from => "/visits/#{id}/image_datasets.xml" )
+  end
+  
+  def to_s
+    metamri_visit = to_metamri_visit_raw_data_directory
+    metamri_visit.datasets = datasets.collect { |ds| ds.to_metamri_raw_image_dataset}
+    metamri_visit.to_s
+  end
 end
+

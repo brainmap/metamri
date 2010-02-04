@@ -7,7 +7,7 @@ class RawImageDatasetResource < ActiveResource::Base
   # Creates a Backwards Transfer to go from ActiveRecord to Metamri Classes
   # ActiveResource will provide :attr methods for column names from the database, 
   # so check the current schema.rb file for those.
-  def to_metamri_image_dataset
+  def to_metamri_raw_image_dataset
     # A Metamri Class requires at least one valid image file.
     # This is a little tricky since we really only care about the variables, not rescanning them.
     
@@ -17,4 +17,16 @@ class RawImageDatasetResource < ActiveResource::Base
     
     return @dataset
   end
+  
+  # Map RawImageDatasetResource and RawImageDataset
+  # def method_missing(m, *args, &block)
+  #   puts m
+  #   if m == :directory
+  #     path
+  #   elsif m == :directory_basename
+  #     File.basename(directory)
+  #   else
+  #     super
+  #   end
+  # end
 end
