@@ -179,7 +179,15 @@ have more component files than shell commands can handle.
   
   
   def file_count
-    @file_count ||= Dir.open(@directory).reject{ |branch| /^\./.match(branch) }.length
+    unless @file_count
+      if @raw_image_files.first.dicom?
+        @file_count = Dir.open(@directory).reject{ |branch| /^\./.match(branch) }.length
+      elsif @raw_image_files.first.pfile?
+        @file_count = 1
+      else raise "File not recognized as dicom or pfile."
+      end
+    end
+    return @file_count
   end
   
   # Creates an Hirb Table for pretty output of dataset info.
@@ -191,11 +199,36 @@ have more component files than shell commands can handle.
     
     Hirb::Helpers::AutoTable.render(
       datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.directory)] }, 
-      :headers => { :directory_basename => 'Directory', :series_description => 'Series Description', :file_count => 'File Count'}, 
-      :fields => [:directory_basename, :series_description, :file_count]
+      :headers => { :relative_dataset_path => 'Dataset', :series_details => 'Series Details', :file_count => 'File Count'}, 
+      :fields => [:relative_dataset_path, :series_details, :file_count]
     )
       
   end
+  
+  def relative_dataset_path(visit_dir = nil)
+    image_file = @raw_image_files.first
+    case image_file.file_type
+      when 'dicom'
+        relative_dataset_path = File.basename(directory)
+      when 'pfile'
+        full_dataset_path = Pathname.new(File.join(directory, image_file.filename))
+        if visit_dir
+          relative_dataset_path = full_dataset_path.relative_path_from(visit_dir)
+        else
+          relative_dataset_path = image_file.filename
+        end
+      else raise "Cannot identify #{@raw_image_files.first.filename}"
+    end
+    
+    return relative_dataset_path
+  end
+  
+  # Reports series details, including description and possilby image quality
+  # check comments.  
+  def series_details
+    @series_description
+  end
+  
 private
 
   # Gets the earliest timestamp among the raw image files in this dataset.

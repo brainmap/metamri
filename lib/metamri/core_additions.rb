@@ -48,6 +48,10 @@ class Pathname
     end
   end
   
+  # def first_pfile(&block)
+  #   Pathname.new(filename).local_copy { block }
+  # end
+  
   def first_dicom
     entries.each do |leaf|
       branch = self + leaf
@@ -87,7 +91,14 @@ class Pathname
     return
   end
   
-  def local_copy(tempdir = Dir.tmpdir)
+=begin
+  Creates a local, unzipped copy of a file for use in scanning.
+  Will return a pathname to the local copy if called directly, or can also be 
+  passed a block.  If it is passed a block, it will create the local copy
+  and ensure the local copy is deleted.
+=end
+
+  def local_copy(tempdir = Dir.tmpdir, &block)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tfbase.escape_filename
     tmpfile = File.join(tempdir, tfbase)
@@ -96,7 +107,19 @@ class Pathname
     else
       FileUtils.cp(self.to_s, tmpfile)
     end
-    return Pathname.new(tmpfile)
+
+    lc = Pathname.new(tmpfile)
+    
+    if block
+      begin
+        yield lc
+      ensure
+        lc.delete
+      end
+
+    else
+      return lc
+    end
   end
   
 end

@@ -28,5 +28,5 @@ class VisitRawDataDirectoryResource < ActiveResource::Base
     metamri_visit.datasets = datasets.collect { |ds| ds.to_metamri_raw_image_dataset}
     metamri_visit.to_s
   end
+  
 end
-

@@ -190,6 +190,14 @@ Returns an array of the created nifti files.
     puts RawImageDataset.to_table(@datasets)
     return
   rescue NameError => e
+    puts e
+    if @datasets.first.class.to_s == "RawImageDatasetResource"
+      @datasets = @datasets.map { |ds| ds.to_metamri_image_dataset }
+    end
+    
+    # puts @datasets.first.class.to_s
+    # puts @datasets
+    
     # Header Line
     printf "\t%-15s %-30s [%s]\n", "Directory", "Series Description", "Files"
     

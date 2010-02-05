@@ -47,9 +47,9 @@ def list_visit(raw_directory)
   begin
     # raise
     visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => raw_directory}})
-    raise "Could not lookup visit using path." unless visit
-    raise "Incorrect visit found." unless visit.path == raw_directory
-  rescue Exception => e
+    raise StandardError.new("Could not lookup visit using path.") unless visit
+    raise StandardError.new("Incorrect visit found.") unless visit.path == raw_directory
+  rescue StandardError => e
     puts e
     visit = VisitRawDataDirectory.new(raw_directory)
     begin
