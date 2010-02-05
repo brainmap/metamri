@@ -204,7 +204,11 @@ have more component files than shell commands can handle.
     )
       
   end
-  
+
+  # Returns a relative filepath to the dataset.  Handles dicoms by returning the
+  # dataset directory, and pfiles by returning either the pfile filename or,
+  # if passed a visit directory, the relative path from the visit directory to 
+  # the pfile (i.e. P00000.7 or raw/P00000.7).
   def relative_dataset_path(visit_dir = nil)
     image_file = @raw_image_files.first
     case image_file.file_type
