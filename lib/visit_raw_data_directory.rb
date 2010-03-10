@@ -185,7 +185,6 @@ Returns an array of the created nifti files.
     puts; @visit_directory.length.times { print "-" }; puts
     puts "#{@visit_directory}"
     puts "#{@rmr_number} - #{@scanner_source}"
-    puts "#{@scan_procedure_name}"
     puts "#{@scanid}"
     puts RawImageDataset.to_table(@datasets)
     return

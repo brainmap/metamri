@@ -45,15 +45,16 @@ def list_visit(raw_directory)
   # Then fall back to scanning them fresh.
   
   begin
-    # raise
     visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => raw_directory}})
-    raise StandardError.new("Could not lookup visit using path.") unless visit
-    raise StandardError.new("Incorrect visit found.") unless visit.path == raw_directory
-  rescue StandardError => e
+    raise IOError.new("Could not lookup visit using path.") unless visit
+    raise IOError.new("Incorrect visit found.") unless visit.path == raw_directory
+    visit.to_s
+  rescue IOError => e
     puts e
     visit = VisitRawDataDirectory.new(raw_directory)
     begin
       visit.scan
+      visit.to_s
     rescue IndexError => e
       $LOG.error "Are you sure #{raw_directory} is a valid raw visit directory?"
       raise e
@@ -69,7 +70,6 @@ def list_visit(raw_directory)
   
   # Visit is Either a RawVisitDataDirectory or a RawVisitDataDirectoryResource
   # Either can handle printing to_s
-  visit.to_s
 
 end
 

@@ -181,7 +181,7 @@ have more component files than shell commands can handle.
   def file_count
     unless @file_count
       if @raw_image_files.first.dicom?
-        @file_count = Dir.open(@directory).reject{ |branch| /^\./.match(branch) }.length
+        @file_count = Dir.open(@directory).reject{ |branch| /(^\.|.yaml$)/.match(branch) }.length
       elsif @raw_image_files.first.pfile?
         @file_count = 1
       else raise "File not recognized as dicom or pfile."
@@ -200,7 +200,8 @@ have more component files than shell commands can handle.
     Hirb::Helpers::AutoTable.render(
       datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.directory)] }, 
       :headers => { :relative_dataset_path => 'Dataset', :series_details => 'Series Details', :file_count => 'File Count'}, 
-      :fields => [:relative_dataset_path, :series_details, :file_count]
+      :fields => [:relative_dataset_path, :series_details, :file_count],
+      :description => false # Turn off rendering row count description at bottom.
     )
       
   end

@@ -29,3 +29,9 @@ module UnknownImageDataset
     return nifti_conversion_command, nifti_output_file
   end
 end
+
+module DTIDataset
+  def dataset_to_nifti(nifti_output_directory, nifti_filename, input_options = {} )
+    
+  end
+end

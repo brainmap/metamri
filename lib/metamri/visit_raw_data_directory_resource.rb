@@ -27,10 +27,19 @@ class VisitRawDataDirectoryResource < ActiveResource::Base
   # Convert a Resource and its datasets to a VisitRawDataDirectory and 
   # RawImageDataset, respectively, then pretty print it using
   # VisitRawDataDirectory.to_s
+  # def to_s
+  #   metamri_visit = to_metamri_visit_raw_data_directory
+  #   metamri_visit.datasets = datasets.collect { |ds| ds.to_metamri_raw_image_dataset}
+  #   metamri_visit.to_s
+  # end
+  
   def to_s
-    metamri_visit = to_metamri_visit_raw_data_directory
-    metamri_visit.datasets = datasets.collect { |ds| ds.to_metamri_raw_image_dataset}
-    metamri_visit.to_s
+    puts; path.length.times { print "-" }; puts
+    puts "#{path}"
+    puts "#{rmr} - #{scanner_source}"
+    # puts "#{@scan_procedure_name}"
+    puts RawImageDatasetResource.to_table(datasets)
+    puts "Notes: " + notes unless notes.nil? or notes.empty?
   end
   
 end

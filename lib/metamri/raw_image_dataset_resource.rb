@@ -58,4 +58,71 @@ class RawImageDatasetResource < ActiveResource::Base
   #     super
   #   end
   # end
+  
+  # def file_count
+  #   unless @file_count
+  #     if @raw_image_files.first.dicom?
+  #       @file_count = Dir.open(@directory).reject{ |branch| /^\./.match(branch) }.length
+  #     elsif @raw_image_files.first.pfile?
+  #       @file_count = 1
+  #     else raise "File not recognized as dicom or pfile."
+  #     end
+  #   end
+  #   return @file_count
+  # end
+  
+  def pfile?
+    scanned_file =~ /^P.*.7$/
+  end
+  
+  
+  
+  def file_count
+    if pfile?
+      file_count = 1
+    else
+      file_count = Dir.open(path).reject{ |branch| /(^\.|.yaml$)/.match(branch) }.length
+    end
+    return file_count
+  end
+  
+  # Returns a relative filepath to the dataset.  Handles dicoms by returning the
+  # dataset directory, and pfiles by returning either the pfile filename or,
+  # if passed a visit directory, the relative path from the visit directory to 
+  # the pfile (i.e. P00000.7 or raw/P00000.7).
+  def relative_dataset_path(visit_dir = nil)
+    if pfile?
+      relative_dataset_path = scanned_file
+    else # Then it's a dicom.
+      relative_dataset_path = File.basename(path)
+    end
+    
+    return relative_dataset_path
+  end
+  
+  # Creates an Hirb Table for pretty output of dataset info.
+  # It takes an array of either RawImageDatasets or RawImageDatasetResources
+  def self.to_table(datasets)
+    Hirb::Helpers::AutoTable.render(
+      datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.path)] }, 
+      :headers => { :relative_dataset_path => 'Dataset', :series_description => 'Series Details', :file_count => "File Count", }, 
+      :fields => [:relative_dataset_path, :series_description, :file_count],
+      :description => false # Turn off rendering row count description at bottom.
+    )
+  rescue NameError => e
+    puts e
+
+    # Header Line
+    printf "\t%-15s %-30s [%s]\n", "Directory", "Series Description", "Files"
+
+    # Dataset Lines
+    datasets.sort_by{|ds| [ds.timestamp, File.basename(ds.path)] }.each do |dataset|
+      printf "\t%-15s %-30s [%s]\n", dataset.relative_dataset_path, dataset.series_description, dataset.file_count
+    end
+
+    # Reminder Line
+    puts "(This would be much prettier if you installed hirb.)"
+    return
+  end   
+  
 end
