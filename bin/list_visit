@@ -9,17 +9,18 @@
 #
 # == Examples
 #
-#   list_visit /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009
+#   %> list_visit /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009
 #
-#   cd /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009
+#   
 #   list_visit
 #
 #   If no raw data directory is given, the current directory will be assumed.
-#     list_visit
+#     %> cd /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009
+#     %> list_visit
 #
 # == Usage 
-#   list_visit <raw_data_directory>
-#
+#   %> list_visit <raw_data_directory>
+# 
 #   For help use: list_vist -h
 #
 # == Options
@@ -38,38 +39,33 @@ require 'rdoc/usage'
 # require 'logger'
 
 def list_visit(raw_directory)
-  # $LOG = Logger.new(STDOUT)
-  # $LOG.level = Logger::INFO
+  unless $LOG
+    $LOG = Logger.new(STDOUT)
+    $LOG.level = Logger::INFO
+  end
   
   # First try to lookup Visit and Datasets through active_resource
-  # Then fall back to scanning them fresh.
+  # Then fall back to scanning them fresh using the metamri classes.
   
   begin
     visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => raw_directory}})
     raise IOError.new("Could not lookup visit using path.") unless visit
-    raise IOError.new("Incorrect visit found.") unless visit.path == raw_directory
-    visit.to_s
+    raise IOError.new("Returned visit does not match path.") unless visit.path == raw_directory
   rescue IOError => e
     puts e
     visit = VisitRawDataDirectory.new(raw_directory)
     begin
       visit.scan
-      visit.to_s
     rescue IndexError => e
       $LOG.error "Are you sure #{raw_directory} is a valid raw visit directory?"
       raise e
     end
   end
 
-  # begin
-  # rescue Exception => e
-  #   $LOG.error "There was a problem scanning a dataset in #{visit.visit_directory}... skipping."
-  #   $LOG.error "Exception message: #{e.message}"
-  #   raise e
-  # end
-  
-  # Visit is Either a RawVisitDataDirectory or a RawVisitDataDirectoryResource
-  # Either can handle printing to_s
+  # Output a pretty version of the visit details.
+  # Visit is Either a RawVisitDataDirectory or a RawVisitDataDirectoryResource,
+  # and either should respond to to_s
+  visit.to_s
 
 end
 

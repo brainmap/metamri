@@ -1,6 +1,8 @@
 == ImageData
 
-A small library that can be used to extract metadata from large collections of research MR imaging data sets.  Support is also provided to insert the metadata into a Wisconsin ADRC Imaging Core compatible database.  Several 
+A small library that can be used to extract metadata from large collections of research MR imaging data sets.  
+
+Support is also provided to insert the metadata into a Wisconsin ADRC Imaging Core compatible database.  Several 
 command line utilities are provided as well as a minimal API that is useful for building ruby on rails rake tasks.
 
 You will most likely be interested in either:

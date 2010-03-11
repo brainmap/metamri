@@ -184,8 +184,8 @@ Returns an array of the created nifti files.
   def to_s
     puts; @visit_directory.length.times { print "-" }; puts
     puts "#{@visit_directory}"
-    puts "#{@rmr_number} - #{@scanner_source}"
-    puts "#{@scanid}"
+    puts "#{@rmr_number} - #{@timestamp.strftime('%F')} - #{@scanner_source}"
+    puts
     puts RawImageDataset.to_table(@datasets)
     return
   rescue NameError => e

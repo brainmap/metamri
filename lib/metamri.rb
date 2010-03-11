@@ -9,7 +9,7 @@ require 'metamri/visit_raw_data_directory_resource'
 
 begin
   require 'hirb'
-rescue LoadError => e
+rescue LoadError
   puts "Hirb must be installed for pretty output. Use 'sudo gem install hirb'"
 end
 

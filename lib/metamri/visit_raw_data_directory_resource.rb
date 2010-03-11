@@ -36,7 +36,8 @@ class VisitRawDataDirectoryResource < ActiveResource::Base
   def to_s
     puts; path.length.times { print "-" }; puts
     puts "#{path}"
-    puts "#{rmr} - #{scanner_source}"
+    puts "#{rmr} - #{date} - #{scanner_source}"
+    puts
     # puts "#{@scan_procedure_name}"
     puts RawImageDatasetResource.to_table(datasets)
     puts "Notes: " + notes unless notes.nil? or notes.empty?
