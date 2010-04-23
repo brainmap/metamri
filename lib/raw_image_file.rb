@@ -89,8 +89,10 @@ temporary file.
     # are not found
     begin
       import_hdr
+    rescue ScriptError => e
+      raise ScriptError, "Could not find required DICOM Header Meta Element: #{e}"
     rescue Exception => e
-      raise(IOError, "Header import failed for file #{@filename}. #{e}")
+      raise IOError, "Header import failed for file #{@filename}.  #{e}"
     end
     
     # deallocate the header data to save memory space.
@@ -295,65 +297,105 @@ Extracts a collection of metadata from @hdr_data retrieved using the dicom_hdr
 utility.  
 =end
   def dicom_hdr_import
-    date_pat =               /ID STUDY DATE\/\/(.*)\n/i
-    time_pat =               /ID Series Time\/\/(.*)\n/i
-    source_pat =             /ID INSTITUTION NAME\/\/(.*)\n/i
-    rmr_number_pat =         /[ID Accession Number|ID Study Description]\/\/(RMR.*)\n/i
-    series_description_pat = /ID SERIES DESCRIPTION\/\/(.*)\n/i
-    gender_pat =             /PAT PATIENT SEX\/\/(.)/i
-    slice_thickness_pat =    /ACQ SLICE THICKNESS\/\/(.*)\n/i
-    slice_spacing_pat =      /ACQ SPACING BETWEEN SLICES\/\/(.*)\n/i
-    recon_diam_pat =         /ACQ RECONSTRUCTION DIAMETER\/\/([0-9]+)/i
-    #acquisition_matrix_pat = /ACQ ACQUISITION MATRIX\/\/ ([0-9]+) ([0-9]+) ([0-9]+) ([0-9]+)/i
-    acq_mat_x_pat =          /IMG Rows\/\/ ([0-9]+)/i
-    acq_mat_y_pat =          /IMG Columns\/\/ ([0-9]+)/i
-    num_slices_pat =         /REL Images in Acquisition\/\/([0-9]+)/i
-    bold_reps_pat =          /REL Number of Temporal Positions\/\/([0-9]+)/i
-    rep_time_pat =           /ACQ Repetition Time\/\/(.*)\n/i
+    meta_matchers = {}
+    meta_matchers[:rmr_number] = { 
+      :type => :string, 
+      :pat => /[ID Accession Number|ID Study Description]\/\/(RMR.*)\n/i, 
+      :required => true 
+    }
+    meta_matchers[:slice_thickness] = { 
+      :type => :float, 
+      :pat => /ACQ SLICE THICKNESS\/\/(.*)\n/i,
+      :required => false
+    }
+    meta_matchers[:slice_spacing] = {
+      :type => :float,
+      :pat => /ACQ SPACING BETWEEN SLICES\/\/(.*)\n/i,
+      :required => false
+    }
+    meta_matchers[:source] = {
+      :type => :string,
+      :pat => /ID INSTITUTION NAME\/\/(.*)\n/i,
+      :required => true
+    } 
+    meta_matchers[:series_description] = {
+      :type => :string,
+      :pat => /ID SERIES DESCRIPTION\/\/(.*)\n/i,
+      :required => true 
+    }
+    meta_matchers[:gender] = {
+      :type => :string,
+      :pat => /PAT PATIENT SEX\/\/(.)/i,
+      :required => false
+    }
+    meta_matchers[:reconstruction_diameter] = {
+      :type => :int,
+      :pat => /ACQ RECONSTRUCTION DIAMETER\/\/([0-9]+)/i,
+      :required => false
+    }
+    meta_matchers[:acquisition_matrix_x] = {
+      :type => :int,
+      :pat => /IMG Rows\/\/ ([0-9]+)/i,
+      :required => false
+    }
+    meta_matchers[:acquisition_matrix_y] = {
+      :type => :int,
+      :pat => /IMG Columns\/\/ ([0-9]+)/i,
+      :required => false
+    }
+    meta_matchers[:num_slices] = {
+      :type => :int,
+      :pat => /REL Images in Acquisition\/\/([0-9]+)/i,
+      :required => false
+    }
+    meta_matchers[:bold_reps] = {
+      :type => :int,
+      :pat => /REL Number of Temporal Positions\/\/([0-9]+)/i,
+      :required => true
+    }
+    meta_matchers[:rep_time] = {
+      :type => :float,
+      :pat => /ACQ Repetition Time\/\/(.*)\n/i,
+      :required => false
+    }
+    meta_matchers[:date] = {
+      :type => :datetime,
+      :pat => /ID STUDY DATE\/\/(.*)\n/i #,
+      # :required => false
+  }
+    meta_matchers[:time] = {
+      :type => :datetime,
+      :pat => /ID Series Time\/\/(.*)\n/i #,
+      # :required => false
+    }
     
-    rmr_number_pat =~ @hdr_data
-    @rmr_number = ($1).strip.chomp
-    
-    source_pat =~ @hdr_data
-    @source = ($1).strip.chomp
-    
-    num_slices_pat =~ @hdr_data
-    @num_slices = ($1).to_i
-    
-    slice_thickness_pat =~ @hdr_data
-    @slice_thickness = ($1).strip.chomp.to_f
-    
-    slice_spacing_pat =~ @hdr_data
-    @slice_spacing = ($1).strip.chomp.to_f
-    
-    date_pat =~ @hdr_data
+    meta_matchers.each_pair do |name, tag_hash|
+      begin
+        next if tag_hash[:type] == :datetime
+        tag_hash[:pat] =~ @hdr_data
+        raise ScriptError, "No match found for #{name}" if ($1).nil? 
+        value = case tag_hash[:type]
+          when :string then ($1).strip.chomp
+          when :float then ($1).strip.chomp.to_f
+          when :int then ($1).to_i
+        end
+        self.instance_variable_set("@#{name}", value)
+      rescue ScriptError => e
+        if tag_hash[:required]
+          raise ScriptError, "#{name}"
+        else
+          puts "+++ Warning: #{name} could not be found."
+        end
+      end
+    end
+
+    # Set Timestamp separately because it requires both Date and Time to be extracted.
+    meta_matchers[:date][:pat] =~ @hdr_data
     date = $1
-    time_pat =~ @hdr_data
+    meta_matchers[:time][:pat] =~ @hdr_data
     time = $1
     @timestamp = DateTime.parse(date + time)
     
-    gender_pat =~ @hdr_data
-    @gender = $1
-    
-    #acquisition_matrix_pat =~ @hdr_data
-    #matrix = [($1).to_i, ($2).to_i, ($3).to_i, ($4).to_i]
-    #matrix = matrix.delete_if { |x| x == 0 }
-    acq_mat_x_pat =~ @hdr_data
-    @acquisition_matrix_x = ($1).to_i
-    acq_mat_y_pat =~ @hdr_data
-    @acquisition_matrix_y = ($1).to_i
-    
-    series_description_pat =~ @hdr_data
-    @series_description = ($1).strip.chomp
-    
-    recon_diam_pat =~ @hdr_data
-    @reconstruction_diameter = ($1).to_i
-    
-    bold_reps_pat =~ @hdr_data
-    @bold_reps = ($1).to_i
-    
-    rep_time_pat =~ @hdr_data
-    @rep_time = ($1).strip.chomp.to_f
   end
   
 

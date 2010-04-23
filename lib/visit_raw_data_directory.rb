@@ -317,7 +317,7 @@ generates an sql insert statement to insert this visit with a given participant 
     begin
       rawimagefile = RawImageFile.new(rawfile.to_s)
     rescue Exception => e
-      raise(IOError, "Trouble reading raw image file #{rawfile}. #{e}")
+      raise(IOError, "+++ Trouble reading raw image file #{rawfile}. #{e}")
     end
     
     return RawImageDataset.new(original_parent_directory.to_s, [rawimagefile])
