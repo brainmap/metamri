@@ -351,7 +351,7 @@ utility.
     meta_matchers[:bold_reps] = {
       :type => :int,
       :pat => /REL Number of Temporal Positions\/\/([0-9]+)/i,
-      :required => true
+      :required => false
     }
     meta_matchers[:rep_time] = {
       :type => :float,
