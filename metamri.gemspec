@@ -5,14 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{metamri}
-  s.version = "0.1.14"
+  s.version = "0.1.15"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2010-03-11}
+  s.date = %q{2010-04-23}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
-  s.executables = ["import_study.rb", "import_visit.rb", "import_respiratory_files.rb", "list_visit", "convert_visit.rb"]
+  s.executables = ["import_study.rb", "convert_visit.rb", "import_respiratory_files.rb", "import_visit.rb", "list_visit"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -51,11 +51,11 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{MRI metadata}
   s.test_files = [
-    "test/nifti_builder_spec.rb",
-     "test/raw_image_dataset_test.rb",
+    "test/raw_image_dataset_test.rb",
      "test/raw_image_file_test.rb",
      "test/visit_duplication_test.rb",
-     "test/visit_test.rb"
+     "test/visit_test.rb",
+     "test/nifti_builder_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
