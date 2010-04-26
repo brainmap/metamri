@@ -6,17 +6,19 @@
 #
 # == Examples
 #   convert_visit.rb /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009 ries.aware.visit1 
-
+#   convert_visit.rb /Data/vtrak1/raw/ries.aware.visit1/awr001_7854_02102009 ries.aware.visit1 /Data/scratch/temp_analysis/awr001
 #
 # == Usage 
 #   convert_visit.rb <raw_data_directory> <scan_procedure_codename> 
 #
 #   For help use: import_visit.rb -h
 #
+#	  Currently, the script will create an "unknown" directory in the output 
+#   directory, and will place files named after the series description in the 
+#   dicom header in that directory.  
+#
 # == Options
-#   -h, --help          Displays help message
-#   -v, --visit         Visit raw data directory, absolute path
-#   -p, --scan_procedure      scan_procedure codename, e.g. johnson.alz.visit1
+#   There is currently no option parser in this script.  To be implemented.
 #
 # == Author
 #   
@@ -32,16 +34,7 @@ require 'pathname'
 require 'rdoc/usage'
 require 'logger'
 
-# == Function
-#   
-# 
-# == Usage
-#
-#   convert_visit.rb /Data/vtrak1/raw/ries.aware.visit1/awr001_9999_010110/ ries.aware.visit1 /tmp/awr001
-#
-# == Example
-#   
-#
+
 def convert_visit(raw_directory, scan_procedure_codename, output_directory = nil)
   $LOG = Logger.new(File.join(Dir.tmpdir, File.basename(raw_directory)))  
   v = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
