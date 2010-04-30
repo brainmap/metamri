@@ -1,8 +1,7 @@
-
 require 'rubygems'
 require 'sqlite3'
-require 'nifti_builder'
 require 'ftools'
+require 'metamri/nifti_builder'
 
 =begin rdoc
 A #Dataset defines a single 3D or 4D image, i.e. either a volume or a time series
@@ -28,6 +27,8 @@ class RawImageDataset
   attr_reader :scanned_file
   # the scanner source
   attr_reader :scanner_source
+  # A #RawImageDatasetThumbnail object that composes the thumbnail for the dataset.
+  attr_reader :thumbnail
 
 =begin rdoc
   * dir: The directory containing the files.
@@ -102,8 +103,14 @@ at the visit level, or even higher when doing a whole file system scan.
 
 =begin rdoc
 Returns a hash of attributes used for insertion into active record.
+Options:  :thumb => FileHandle to thumbnail includes a thumbnail.
 =end  
-  def attributes_for_active_record
+  def attributes_for_active_record(options = {})
+    thumbnail = options.has_key?(:thumb) ? options[:thumb] : nil
+    
+    unless (thumbnail.class == File || thumbnail == nil)
+      raise(IOError, "Thumbnail #{options[:thumb]} must be a #File.")
+    end
     { :rmr => @rmr_number,
       :series_description => @series_description,
       :path => @directory,
@@ -112,7 +119,20 @@ Returns a hash of attributes used for insertion into active record.
       :rep_time => @raw_image_files.first.rep_time,
       :bold_reps => @raw_image_files.first.bold_reps,
       :slices_per_volume => @raw_image_files.first.num_slices,
-      :scanned_file => @scanned_file }
+      :scanned_file => @scanned_file,
+      :thumbnail => thumbnail
+    }
+  end
+  
+  def create_thumbnail
+    @thumbnail = RawImageDatasetThumbnail.new(self)
+    @thumbnail.create_thumbnail
+  end
+
+  def thumbnail_for_active_record
+    # Ensure a thumbnail has been created.
+    create_thumbnail unless @thumbnail
+    return File.open(@thumbnail.path)
   end
 
 =begin rdoc
@@ -170,11 +190,16 @@ have more component files than shell commands can handle.
       return 'I.*'
     when /^I/
       return 'I*.dcm'
+    when /.*\.\d{3,4}/
+      return '*.[0-9]*'
     when /\.0/
       return '*.0*'
     else
       return nil
     end
+    # Note - To exclude just yaml files we could also just use the bash glob
+    # '!(*.yaml), but we would have to list all exclusions.  This may turn
+    # out easier in the long run.
   end
   
   

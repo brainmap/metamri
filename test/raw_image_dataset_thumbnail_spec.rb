@@ -60,6 +60,13 @@ describe "Create a thumbnail png for display." do
     File.exist?(t.path).should be_true
   end
   
+  it "should raise a ScriptError if the file could not be created." do
+    t = RawImageDatasetThumbnail.new(@ds)
+    
+    File.stub!(:exist?).and_return(false)
+    lambda { t.create_thumbnail }.should raise_error(ScriptError, /Error creating thumbnail/ )    
+  end
+  
   after(:each) do
     # @test_niftis.flatten.each { |nifti| File.delete(nifti) } unless @test_niftis.empty?
     # [@output_directories, Dir.tmpdir, '/tmp'].flatten.each do |temp_dir|

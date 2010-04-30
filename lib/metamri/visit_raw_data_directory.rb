@@ -4,11 +4,10 @@ require 'tempfile'
 require 'yaml'
 require 'tmpdir'
 require 'fileutils'
-require 'raw_image_file'
-require 'raw_image_dataset'
 require 'sqlite3'
 require 'logger'
-
+require 'metamri/raw_image_file'
+require 'metamri/raw_image_dataset'
 
 # A shared function that displays a message and the date/time to standard output.
 def flash(msg)
@@ -171,7 +170,7 @@ Returns an array of the created nifti files.
         nifti_input_path = File.dirname(dicom_files.first)
         nifti_conversion_command, nifti_output_file = dataset.to_nifti!(nifti_output_path, nifti_filename, :input_directory => nifti_input_path, :append_modality_directory => true)
         nifti_output_files << nifti_output_file
-      end 
+      end
     end
     
     return nifti_output_files

@@ -4,9 +4,9 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'test/unit'
-require 'visit_raw_data_directory'
 require 'pathname'
 require 'logger'
+require 'metamri'
 
 class RawImageFileTest < Test::Unit::TestCase
   DBFILE = '/Users/kris/projects/TransferScans/db/development.sqlite3'
