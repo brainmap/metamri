@@ -35,11 +35,17 @@ class RawImageDatasetThumbnail
       output_directory = Dir.mktmpdir
     end
     name = @dataset.series_description.escape_filename
-    png_filename ||= name + '.png'
-    nifti_filename ||=  name + '.nii'
+    png_filename ||= File.join(output_directory, name + '.png')
+    nifti_filename ||=  File.join(output_directory, name + '.nii')
     
-    # create_thumbnail_with_fsl_slicer(output_directory, nifti_filename, png_filename)
-    create_thumbnail_with_rubydicom(png_filename)
+    begin
+      create_thumbnail_with_rubydicom(png_filename)
+    rescue ScriptError => e
+      puts "Could not create thumbnail with rubydicom.  Trying FSL slicer."
+      create_thumbnail_with_fsl_slicer(output_directory, nifti_filename, png_filename)
+    end
+    
+    return png_filename
   end
   
   private
@@ -53,6 +59,7 @@ class RawImageDatasetThumbnail
     dicom_file = Pathname(dicom_files[dicom_files.size/2])
     dicom_file.local_copy do |lc|
       dcm = DICOM::DObject.new(lc.to_s)
+      raise ScriptError, "Could not read dicom #{dicom_file.to_s}" unless dcm.read_success
       image = dcm.get_image_magick(:rescale => true)
       image[0].write(output_file)
     end

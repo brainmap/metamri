@@ -4,7 +4,7 @@ class String
 Does same basic string replacements to ensure valid filenames.
 =end
   def escape_filename
-    mgsub([[/[\s\:\)\(\/\?]+/, "-"], [/\*/, "star"]])
+    mgsub([[/[\s\:\)\(\/\?]+/, "-"], [/\*/, "star"], [/\./,""]])
   end
   
   def mgsub(key_value_pairs=[].freeze)
@@ -98,7 +98,7 @@ class Pathname
   and ensure the local copy is deleted.
 =end
 
-  def local_copy(tempdir = Dir.tmpdir, &block)
+  def local_copy(tempdir = Dir.mktmpdir, &block)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tfbase.escape_filename
     tmpfile = File.join(tempdir, tfbase)
