@@ -57,6 +57,8 @@ class RawImageFile
   attr_reader :rep_time
   # Number of bold reps in the complete functional task run.
   attr_reader :bold_reps
+  # Import Warnings - Fields that could not be read.
+  attr_reader :warnings
 
 =begin rdoc
 Creates a new instance of the class given a path to a valid image file.
@@ -73,6 +75,7 @@ temporary file.
     absfilepath = File.expand_path(pathtofile)
     raise(IOError, "File not found at #{absfilepath}.") if not File.exists?(absfilepath)
     @filename = File.basename(absfilepath)
+    @warnings = []
     
     # try to read the header, raise an IOError if unsuccessful
     begin
@@ -384,7 +387,7 @@ utility.
         if tag_hash[:required]
           raise ScriptError, "#{name}"
         else
-          puts "+++ Warning: #{name} could not be found."
+          @warnings << "Tag #{name} could not be found."
         end
       end
     end

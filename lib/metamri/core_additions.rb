@@ -1,10 +1,11 @@
+require 'tmpdir'
 class String
 
 =begin rdoc
 Does same basic string replacements to ensure valid filenames.
 =end
   def escape_filename
-    mgsub([[/[\s\:\)\(\/\?]+/, "-"], [/\*/, "star"], [/\./,""]])
+    mgsub([[/[\s\:\)\(\/\?\,]+/, "-"], [/\*/, "star"], [/\./,""]])
   end
   
   def mgsub(key_value_pairs=[].freeze)
@@ -102,6 +103,9 @@ class Pathname
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tfbase.escape_filename
     tmpfile = File.join(tempdir, tfbase)
+    # puts tmpfile
+    # puts File.exist?(tmpfile)
+    File.delete(tmpfile) if File.exist?(tmpfile)
     if self.to_s =~ /\.bz2$/
       `bunzip2 -k -c '#{self.to_s}' >> '#{tmpfile}'`
     else

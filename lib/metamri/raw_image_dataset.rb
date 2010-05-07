@@ -62,6 +62,8 @@ class RawImageDataset
     raise(IndexError, "No scanned file found") if @scanned_file.nil?
     @scanner_source = @raw_image_files.first.source
     raise(IndexError, "No scanner source found") if @scanner_source.nil?
+    
+    $LOG ||= Logger.new(STDOUT)
   end
 
 =begin rdoc
