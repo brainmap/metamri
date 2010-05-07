@@ -5,14 +5,14 @@
 
 Gem::Specification.new do |s|
   s.name = %q{metamri}
-  s.version = "0.1.16"
+  s.version = "0.1.17"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2010-04-23}
+  s.date = %q{2010-05-07}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
-  s.executables = ["import_study.rb", "convert_visit.rb", "import_respiratory_files.rb", "import_visit.rb", "list_visit"]
+  s.executables = ["import_study.rb", "import_visit.rb", "import_respiratory_files.rb", "list_visit", "convert_visit.rb"]
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -29,18 +29,20 @@ Gem::Specification.new do |s|
      "bin/list_visit",
      "lib/metamri.rb",
      "lib/metamri/core_additions.rb",
+     "lib/metamri/mysql_tools.rb",
+     "lib/metamri/nifti_builder.rb",
+     "lib/metamri/raw_image_dataset.rb",
      "lib/metamri/raw_image_dataset_resource.rb",
+     "lib/metamri/raw_image_dataset_thumbnail.rb",
+     "lib/metamri/raw_image_file.rb",
+     "lib/metamri/series_description_parameters.rb",
+     "lib/metamri/visit_raw_data_directory.rb",
      "lib/metamri/visit_raw_data_directory_resource.rb",
-     "lib/mysql_tools.rb",
-     "lib/nifti_builder.rb",
-     "lib/raw_image_dataset.rb",
-     "lib/raw_image_file.rb",
-     "lib/series_description_parameters.rb",
-     "lib/visit_raw_data_directory.rb",
      "metamri.gemspec",
      "test/fixtures/respiratory_fixtures.yaml",
      "test/nifti_builder_spec.rb",
      "test/raw_image_dataset_test.rb",
+     "test/raw_image_dataset_thumbnail_spec.rb",
      "test/raw_image_file_test.rb",
      "test/visit_duplication_test.rb",
      "test/visit_test.rb"
@@ -51,11 +53,12 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.6}
   s.summary = %q{MRI metadata}
   s.test_files = [
-    "test/raw_image_dataset_test.rb",
+    "test/nifti_builder_spec.rb",
+     "test/raw_image_dataset_test.rb",
      "test/raw_image_file_test.rb",
      "test/visit_duplication_test.rb",
      "test/visit_test.rb",
-     "test/nifti_builder_spec.rb"
+     "test/raw_image_dataset_thumbnail_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
