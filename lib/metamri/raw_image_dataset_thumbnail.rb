@@ -1,5 +1,5 @@
 require 'dicom'
-require 'rmagick'
+require 'RMagick'
 require 'tmpdir'
 
 # This class is a ruby object encapsulating a .png 2D Thumbnail of a Dataset
