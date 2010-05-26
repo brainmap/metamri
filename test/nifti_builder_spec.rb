@@ -4,14 +4,11 @@ require 'rubygems'
 require 'spec'
 require 'fileutils'
 require 'tmpdir'
-require 'metamri/core_additions'
-require 'visit_raw_data_directory'
-require 'raw_image_dataset'
-require 'raw_image_file'
+require 'metamri'
 
-VISIT_FIXTURE_SRC = '/Data/vtrak1/raw/johnson.tbi-va.visit1/tbiva018b_9336_12022009'
-VISIT_FIXTURE = File.join(Dir.tmpdir, 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009')
-VISIT_FIXTURE_UNZIPPED = File.join(Dir.tmpdir, 'fixtures/visit_raw_data_directory/tbiva018b_9336_12022009_unzipped')
+VISIT_FIXTURE_SRC = '/Data/vtrak1/raw/johnson.tbi-va.visit1/tbiva034_10019_04212010'
+VISIT_FIXTURE = File.join(Dir.tmpdir, 'fixtures/visit_raw_data_directory/tbiva034_10019_04212010')
+VISIT_FIXTURE_UNZIPPED = File.join(Dir.tmpdir, 'fixtures/visit_raw_data_directory/tbiva034_10019_04212010_unzipped')
 
 
 
@@ -102,7 +99,7 @@ describe "Convert Unknown Dicoms to Nifti Files" do
   end
   
   it "should guess scan id" do
-    @visit.scanid.should == 'tbiva018b'
+    @visit.scanid.should == 'tbiva034'
     
     v = VisitRawDataDirectory.new('/Data/vtrak1/preprocessed/visits/asthana.adrc-clinical-core.visit1/adrc00001', 'asthana.adrc-clinical-core.visit1')
     v.scanid.should == 'adrc00001'

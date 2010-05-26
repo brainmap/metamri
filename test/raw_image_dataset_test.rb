@@ -4,8 +4,8 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'test/unit'
-require 'raw_image_dataset'
-require 'raw_image_file'
+require 'metamri/raw_image_dataset'
+require 'metamri/raw_image_file'
 
 class RawImageDatasetTest < Test::Unit::TestCase
   DBFILE = 'fixtures/development.sqlite3'

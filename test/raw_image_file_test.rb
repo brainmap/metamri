@@ -4,29 +4,29 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'test/unit'
-require 'raw_image_file'
+require 'metamri/raw_image_file'
 
 class RawImageFileTest < Test::Unit::TestCase
   def setup
-    @GEDicom = 'fixtures/I.001'
-    @DiDicom = 'fixtures/S4_EFGRE3D.0001'
+    @GE_IFile = 'fixtures/I.001'
+    @Dicom = 'fixtures/S4_EFGRE3D.0001'
     @EarlyGEPfile = 'fixtures/P59392.7'
     @LateGEPfile = 'fixtures/P27648.7'
     @notafile = 'fixtures/XXX.XXX'
-    @ged = RawImageFile.new(@GEDicom)
-    @did = RawImageFile.new(@DiDicom)
+    @ged = RawImageFile.new(@GE_IFile)
+    @did = RawImageFile.new(@Dicom)
     @egep = RawImageFile.new(@EarlyGEPfile)
     @lgep = RawImageFile.new(@LateGEPfile)
   end
 
   def test_gehdr_dicom_init
     assert_nothing_raised do
-      RawImageFile.new(@GEDicom)
+      RawImageFile.new(@GE_IFile)
     end
   end
   def test_dicomhdr_dicom_init
     assert_nothing_raised do
-      RawImageFile.new(@DiDicom)
+      RawImageFile.new(@Dicom)
     end
   end
   def test_early_gehdr_pfile_init

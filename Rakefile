@@ -28,6 +28,8 @@ begin
     gemspec.homepage = "http://github.com/brainmap/metamri"
     gemspec.authors = ["Kristopher J. Kosmatka"]
     gemspec.add_dependency('sqlite3-ruby')
+    gemspec.add_dependency('dicom')
+    gemspec.add_dependency('rmagick')
     gemspec.add_development_dependency('rspec')
   end
   Jeweler::GemcutterTasks.new

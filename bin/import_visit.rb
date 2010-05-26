@@ -32,11 +32,10 @@
 #
 
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
-
-require 'visit_raw_data_directory'
 require 'pathname'
 require 'rdoc/usage'
 require 'logger'
+require 'metamri'
 
 # == Function
 #   Imports imaging data collected during a single visit into the WADRC Data Tools web application database.

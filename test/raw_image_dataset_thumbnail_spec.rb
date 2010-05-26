@@ -3,9 +3,10 @@ $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'spec'
 require 'escoffier'
 require 'tmpdir'
-require 'raw_image_dataset'
-require 'raw_image_file'
-require 'metamri'
+# require 'metamri'
+require 'metamri/core_additions'
+require 'metamri/raw_image_dataset'
+require 'metamri/raw_image_file'
 require 'metamri/raw_image_dataset_thumbnail'
 
 describe "Create a thumbnail png for display." do  

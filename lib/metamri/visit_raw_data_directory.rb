@@ -48,6 +48,8 @@ class VisitRawDataDirectory
   attr_reader :scan_procedure_name
   # scanner source
   attr_accessor :scanner_source
+  # scanner-defined study id / exam number
+  attr_accessor :study_id
   #
   attr_accessor :db
   # Scan ID is the short name for the scan (tbiva018, tbiva018b)
@@ -71,6 +73,7 @@ class VisitRawDataDirectory
     @rmr_number = nil
     @scan_procedure_name = scan_procedure_name.nil? ? get_scan_procedure_based_on_raw_directory : scan_procedure_name
     @db = nil
+    @study_id = nil
     initialize_log
   end
   
@@ -94,6 +97,7 @@ class VisitRawDataDirectory
       @timestamp = get_visit_timestamp
       @rmr_number = get_rmr_number
       @scanner_source = get_scanner_source
+      @study_id = get_study_id
       flash "Completed scanning #{@visit_directory}" if $LOG.level <= Logger::DEBUG
     else
       raise(IndexError, "No datasets could be scanned for directory #{@visit_directory}")
@@ -106,7 +110,8 @@ class VisitRawDataDirectory
       :date => @timestamp.to_s, 
       :rmr => @rmr_number, 
       :path => @visit_directory, 
-      :scanner_source => get_scanner_source
+      :scanner_source => @scanner_source ||= get_scanner_source,
+      :scan_number => @study_id
     }
   end
   
@@ -183,7 +188,7 @@ Returns an array of the created nifti files.
   def to_s
     puts; @visit_directory.length.times { print "-" }; puts
     puts "#{@visit_directory}"
-    puts "#{@rmr_number} - #{@timestamp.strftime('%F')} - #{@scanner_source}"
+    puts "#{@rmr_number} - #{@timestamp.strftime('%F')} - #{@scanner_source} - #{@study_id unless @study_id.nil?}"
     puts
     puts RawImageDataset.to_table(@datasets)
     return
@@ -361,6 +366,14 @@ generates an sql insert statement to insert this visit with a given participant 
       return ds.scanner_source unless ds.scanner_source.nil?
     end
     raise(IOError, "No valid scanner source found for this visit")
+  end
+  
+  # retrieves exam number / scan id from first #RawImageDataset
+  def get_study_id
+    @datasets.each do |ds|
+      return ds.study_id unless ds.study_id.nil?
+    end
+    # raise(IOError, "No valid study id / exam number found.")
   end
   
   def get_scan_procedure_based_on_raw_directory

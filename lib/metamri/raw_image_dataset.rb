@@ -21,6 +21,8 @@ class RawImageDataset
   attr_reader :rmr_number
   # From the first raw image file in the dataset
   attr_reader :timestamp
+  # From the first raw image file in the dataset
+  attr_reader :study_id
   # A key string unique to a dataset composed of the rmr number and the timestamp.
   attr_reader :dataset_key
   # the file scanned
@@ -51,17 +53,26 @@ class RawImageDataset
       raise(IndexError, im.to_s + " is not a RawImageFile") if im.class.to_s != "RawImageFile"
     end
     @raw_image_files = raw_image_files
+    
     @series_description = @raw_image_files.first.series_description
     raise(IndexError, "No series description found") if @series_description.nil?
+    
     @rmr_number = @raw_image_files.first.rmr_number
     raise(IndexError, "No rmr found") if @rmr_number.nil?
+    
     @timestamp = get_earliest_timestamp
     raise(IndexError, "No timestamp found") if @timestamp.nil?
+    
     @dataset_key = @rmr_number + "::" + @timestamp.to_s
+
     @scanned_file = @raw_image_files.first.filename
     raise(IndexError, "No scanned file found") if @scanned_file.nil?
+    
     @scanner_source = @raw_image_files.first.source
     raise(IndexError, "No scanner source found") if @scanner_source.nil?
+        
+    @study_id = @raw_image_files.first.study_id.nil? ? nil : @raw_image_files.first.study_id
+    # raise(IndexError, "No study id / exam number found") if @study_id.nil?
     
     $LOG ||= Logger.new(STDOUT)
   end
@@ -165,7 +176,14 @@ Returns a path to the created dataset as a string if successful.
     begin 
       nifti_conversion_command, nifti_output_file = to_nifti(nifti_output_directory, nifti_filename, input_options)
       puts nifti_conversion_command
-      system "#{nifti_conversion_command}"
+      begin
+        system "#{nifti_conversion_command}"
+        raise ScriptError, "#{nifti_output_file} does not exist." unless File.exist?(nifti_output_file)
+      rescue ScriptError => e
+        input_options[:no_timing_options] = true
+        nifti_conversion_command, nifti_output_file = to_nifti(nifti_output_directory, nifti_filename, input_options)
+        system "#{nifti_conversion_command}"
+      end
       raise(IOError, "Could not convert image dataset: #{@directory} to #{nifti_output_file}") unless $? == 0
     rescue IOError => e
       $LOG.warn "-- Warning: #{e.message}"

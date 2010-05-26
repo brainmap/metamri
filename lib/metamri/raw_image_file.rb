@@ -36,6 +36,8 @@ class RawImageFile
   attr_reader :source
   # An identifier unique to a 'visit', these are assigned by the scanner techs at scan time.
   attr_reader :rmr_number
+  # An identifier unique to a Study Session - AKA Exam Number
+  attr_reader :study_id
   # A short string describing the acquisition sequence. These come from the scanner.
   # code and are used to initialise SeriesDescription objects to find related attributes.
   attr_reader :series_description
@@ -300,79 +302,84 @@ Extracts a collection of metadata from @hdr_data retrieved using the dicom_hdr
 utility.  
 =end
   def dicom_hdr_import
-    meta_matchers = {}
-    meta_matchers[:rmr_number] = { 
+    dicom_tag_templates = {}
+    dicom_tag_templates[:rmr_number] = { 
       :type => :string, 
       :pat => /[ID Accession Number|ID Study Description]\/\/(RMR.*)\n/i, 
       :required => true 
     }
-    meta_matchers[:slice_thickness] = { 
+    dicom_tag_templates[:study_id] = {
+      :type => :string,
+      :pat => /STUDY ID\/\/([0-9]+)/i,
+      :required => true 
+    }
+    dicom_tag_templates[:slice_thickness] = { 
       :type => :float, 
       :pat => /ACQ SLICE THICKNESS\/\/(.*)\n/i,
       :required => false
     }
-    meta_matchers[:slice_spacing] = {
+    dicom_tag_templates[:slice_spacing] = {
       :type => :float,
       :pat => /ACQ SPACING BETWEEN SLICES\/\/(.*)\n/i,
       :required => false
     }
-    meta_matchers[:source] = {
+    dicom_tag_templates[:source] = {
       :type => :string,
       :pat => /ID INSTITUTION NAME\/\/(.*)\n/i,
       :required => true
     } 
-    meta_matchers[:series_description] = {
+    dicom_tag_templates[:series_description] = {
       :type => :string,
       :pat => /ID SERIES DESCRIPTION\/\/(.*)\n/i,
       :required => true 
     }
-    meta_matchers[:gender] = {
+    dicom_tag_templates[:gender] = {
       :type => :string,
       :pat => /PAT PATIENT SEX\/\/(.)/i,
       :required => false
     }
-    meta_matchers[:reconstruction_diameter] = {
+    dicom_tag_templates[:reconstruction_diameter] = {
       :type => :int,
       :pat => /ACQ RECONSTRUCTION DIAMETER\/\/([0-9]+)/i,
       :required => false
     }
-    meta_matchers[:acquisition_matrix_x] = {
+    dicom_tag_templates[:acquisition_matrix_x] = {
       :type => :int,
       :pat => /IMG Rows\/\/ ([0-9]+)/i,
       :required => false
     }
-    meta_matchers[:acquisition_matrix_y] = {
+    dicom_tag_templates[:acquisition_matrix_y] = {
       :type => :int,
       :pat => /IMG Columns\/\/ ([0-9]+)/i,
       :required => false
     }
-    meta_matchers[:num_slices] = {
+    dicom_tag_templates[:num_slices] = {
       :type => :int,
       :pat => /REL Images in Acquisition\/\/([0-9]+)/i,
       :required => false
     }
-    meta_matchers[:bold_reps] = {
+    dicom_tag_templates[:bold_reps] = {
       :type => :int,
       :pat => /REL Number of Temporal Positions\/\/([0-9]+)/i,
       :required => false
     }
-    meta_matchers[:rep_time] = {
+    dicom_tag_templates[:rep_time] = {
       :type => :float,
       :pat => /ACQ Repetition Time\/\/(.*)\n/i,
       :required => false
     }
-    meta_matchers[:date] = {
+    dicom_tag_templates[:date] = {
       :type => :datetime,
       :pat => /ID STUDY DATE\/\/(.*)\n/i #,
       # :required => false
   }
-    meta_matchers[:time] = {
+    dicom_tag_templates[:time] = {
       :type => :datetime,
       :pat => /ID Series Time\/\/(.*)\n/i #,
       # :required => false
     }
     
-    meta_matchers.each_pair do |name, tag_hash|
+    dicom_tag_templates.each_pair do |name, tag_hash|
       begin
         next if tag_hash[:type] == :datetime
         tag_hash[:pat] =~ @hdr_data
@@ -393,9 +400,9 @@ utility.
     end
 
     # Set Timestamp separately because it requires both Date and Time to be extracted.
-    meta_matchers[:date][:pat] =~ @hdr_data
+    dicom_tag_templates[:date][:pat] =~ @hdr_data
     date = $1
-    meta_matchers[:time][:pat] =~ @hdr_data
+    dicom_tag_templates[:time][:pat] =~ @hdr_data
     time = $1
     @timestamp = DateTime.parse(date + time)
     
