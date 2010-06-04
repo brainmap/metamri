@@ -77,7 +77,7 @@ class Pathname
       
         entries.each do |leaf|
           branch = self + leaf
-          if leaf.to_s =~ /^I\.|\.dcm(\.bz2)?$|\.[0-9]+(\.bz2)?$/
+          if leaf.to_s =~ /^I\.(\.bz2)?$|\.dcm(\.bz2)?$|\.[0-9]+(\.bz2)?$/
             local_copies << branch.local_copy(tempdir)
           end
         end

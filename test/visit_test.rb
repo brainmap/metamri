@@ -9,7 +9,7 @@ require 'logger'
 require 'metamri'
 
 class RawImageFileTest < Test::Unit::TestCase
-  DBFILE = '/Users/kris/projects/TransferScans/db/development.sqlite3'
+  DBFILE = '~/code/WADRC-Data-Tools/db/development.sqlite3'
   $LOG = Logger.new('visit_test.log', shift_age = 7, shift_size = 1048576)
   STUDIES = [
     # Pathname.new('/Data/vtrak1/raw/alz_2000'),
