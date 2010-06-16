@@ -1,5 +1,12 @@
 $: << File.dirname(__FILE__)
 
+begin
+  require 'rubygems'
+  gem 'activeresource', '<= 2.3.8'
+  require 'active_resource'
+end
+
+
 require 'metamri/core_additions'
 require 'metamri/raw_image_file'
 require 'metamri/raw_image_dataset'

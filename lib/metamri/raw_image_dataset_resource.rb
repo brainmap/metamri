@@ -1,5 +1,3 @@
-require 'active_resource'
-
 class RawImageDatasetResource < ActiveResource::Base
   self.site = VisitRawDataDirectory::DATAPANDA_SERVER
   self.element_name = "image_dataset"

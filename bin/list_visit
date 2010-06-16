@@ -33,29 +33,42 @@
 
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
-require 'metamri'
 require 'pathname'
-require 'rdoc/usage'
-# require 'logger'
+require 'logger'
+require 'metamri'
 
-def list_visit(raw_directory)
+def run!
+  options = parse_options
+  
+  # Default to scanning the current directory if no argument was given.
+  raw_directory = ARGV[0] ||= Dir.pwd
+  raw_directory = File.expand_path(raw_directory)
+  
+  list_visit raw_directory, options
+  
+end
+
+def list_visit(raw_directory, options = {})
   unless $LOG
     $LOG = Logger.new(STDOUT)
-    $LOG.level = Logger::INFO
+    $LOG.level = options[:verbose] ? Logger::DEBUG : Logger::INFO
   end
   
   # First try to lookup Visit and Datasets through active_resource
   # Then fall back to scanning them fresh using the metamri classes.
   
   begin
+    raise ScriptError, "Scaning filesystem directly..." if options[:force_scan]
+    
     visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => raw_directory}})
+    
     raise IOError.new("Could not lookup visit using path.") unless visit
     raise IOError.new("Returned visit does not match path.") unless visit.path == raw_directory
-  rescue IOError => e
+  rescue ScriptError, IOError => e
     puts e
     visit = VisitRawDataDirectory.new(raw_directory)
     begin
-      visit.scan
+      visit.scan(options)
     rescue IndexError => e
       $LOG.error "Are you sure #{raw_directory} is a valid raw visit directory?"
       raise e
@@ -69,12 +82,29 @@ def list_visit(raw_directory)
 
 end
 
+def parse_options
+  options = Hash.new
+  parser = OptionParser.new do |opts|
+    opts.banner = "Usage: #{File.basename(__FILE__)} [options] [directory]"
+
+    opts.on('-s', '--scan', "Scan filesystem directly instead of checking database first.") do
+      options[:force_scan] = true
+    end
+    
+    opts.on('-v', '--verbose', "Be wordy.") do
+      options[:verbose] = true
+    end
+    
+    opts.on_tail('-h', '--help',          "Show this message")          { puts(parser); exit }
+    opts.on_tail("If no directory is given, default is the current directory.")
+    opts.on_tail("Example: #{File.basename(__FILE__)} pd006")
+
+  end
+  parser.parse!(ARGV)
+
+  return options
+end
+
 if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
-  RDoc::usage() if (ARGV[0] == '-h')
-
-  # Default to scanning the current directory if no argument was given.
-  raw_directory = ARGV[0] ||= Dir.pwd
-  raw_directory = File.expand_path(raw_directory)
-
-  list_visit(raw_directory)
+  run!
 end

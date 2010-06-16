@@ -1,6 +1,4 @@
 $:.unshift File.dirname(__FILE__)
-
-require 'active_resource'
 require 'raw_image_dataset_resource'
 
 class VisitRawDataDirectoryResource < ActiveResource::Base
