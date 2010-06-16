@@ -87,14 +87,14 @@ class VisitRawDataDirectory
   # - :ignore_patterns - An array of Regular Expressions that will be used to skip heavy directories.
   def scan(options = {})
     flash "Scanning visit raw data directory #{@visit_directory}" if $LOG.level <= Logger::INFO
-    
     default_options = {:ignore_patterns => []}
     options = default_options.merge(options)
+    puts "Ignoring directories matching: #{options[:ignore_patterns].join(", ")}" unless options[:ignore_patterns].empty?
     
     d = Pathname.new(@visit_directory)
     d.each_subdirectory do |dd|
       begin
-        pp matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
+        matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
         next unless matches.empty?
         dd.each_pfile { |pf| @datasets << import_dataset(pf, dd) }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd) }
