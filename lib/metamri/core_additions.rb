@@ -92,6 +92,24 @@ class Pathname
     return
   end
   
+  def recursive_local_copy(&block)
+    tempdir = Dir.mktmpdir('local_orig')
+
+    entries.each do |leaf|
+      branch = self + leaf
+      next if branch.directory?
+      next if branch.should_be_skipped
+      lc = branch.local_copy(tempdir)
+      lc.chmod(0444 | 0200 | 0020 )
+    end
+    
+    return tempdir
+  end
+  
+  def should_be_skipped
+    self.to_s =~ /^\./ || self.symlink?
+  end
+  
 =begin
   Creates a local, unzipped copy of a file for use in scanning.
   Will return a pathname to the local copy if called directly, or can also be 
