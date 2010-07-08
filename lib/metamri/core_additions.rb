@@ -92,12 +92,13 @@ class Pathname
     return
   end
   
-  def recursive_local_copy(&block)
+  def recursive_local_copy(ignore_patterns = [], &block)
     tempdir = Dir.mktmpdir('local_orig')
 
     entries.each do |leaf|
       branch = self + leaf
       next if branch.directory?
+      next if ignore_patterns.collect { |pat| leaf.to_s =~ pattern } 
       next if branch.should_be_skipped
       lc = branch.local_copy(tempdir)
       lc.chmod(0444 | 0200 | 0020 )
