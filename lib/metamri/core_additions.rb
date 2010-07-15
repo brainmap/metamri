@@ -1,13 +1,11 @@
 require 'tmpdir'
 class String
-
-=begin rdoc
-Does same basic string replacements to ensure valid filenames.
-=end
+  # Does same basic string replacements to ensure valid filenames.
   def escape_filename
     mgsub([[/[\s\:\)\(\/\?\,]+/, "-"], [/\*/, "star"], [/\./,""]])
   end
   
+  # gsub multiple pairs of regexp's
   def mgsub(key_value_pairs=[].freeze)
     regexp_fragments = key_value_pairs.collect { |k,v| k }
     gsub(Regexp.union(*regexp_fragments)) do |match|
@@ -18,7 +16,7 @@ Does same basic string replacements to ensure valid filenames.
 end
 
 class Pathname
-  MIN_PFILE_SIZE = 10_000_000
+  MIN_PFILE_SIZE = 10_000_000 unless MIN_PFILE_SIZE
   
   def each_subdirectory
     each_entry do |leaf|
@@ -48,10 +46,6 @@ class Pathname
       end
     end
   end
-  
-  # def first_pfile(&block)
-  #   Pathname.new(filename).local_copy { block }
-  # end
   
   def first_dicom
     entries.each do |leaf|
@@ -96,10 +90,11 @@ class Pathname
     tempdir = Dir.mktmpdir('local_orig')
 
     entries.each do |leaf|
-      branch = self + leaf
+      puts branch = self + leaf
       next if branch.directory?
-      next if ignore_patterns.collect { |pat| leaf.to_s =~ pattern } 
+      ignore_patterns.collect { |pat| next if leaf.to_s =~ pattern } 
       next if branch.should_be_skipped
+      puts "Locally provisioning #{leaf}"
       lc = branch.local_copy(tempdir)
       lc.chmod(0444 | 0200 | 0020 )
     end
@@ -117,7 +112,6 @@ class Pathname
   passed a block.  If it is passed a block, it will create the local copy
   and ensure the local copy is deleted.
 =end
-
   def local_copy(tempdir = Dir.mktmpdir, &block)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tfbase.escape_filename
