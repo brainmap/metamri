@@ -16,7 +16,7 @@ class String
 end
 
 class Pathname
-  MIN_PFILE_SIZE = 10_000_000 unless MIN_PFILE_SIZE
+  MIN_PFILE_SIZE = 10_000_000
   
   def each_subdirectory
     each_entry do |leaf|
