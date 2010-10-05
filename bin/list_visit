@@ -51,7 +51,14 @@ end
 def list_visit(raw_directory, options = {})
   unless $LOG
     $LOG = Logger.new(STDOUT)
-    $LOG.level = options[:verbose] ? Logger::DEBUG : Logger::INFO
+    case options[:verbose]
+    when true
+      $LOG.level = Logger::DEBUG
+    when nil 
+      $LOG.level = Logger::INFO
+    when false
+      $LOG.level = Logger::WARN
+    end
   end
   
   # First try to lookup Visit and Datasets through active_resource
@@ -65,7 +72,7 @@ def list_visit(raw_directory, options = {})
     raise IOError.new("Could not lookup visit using path.") unless visit
     raise IOError.new("Returned visit does not match path.") unless visit.path == raw_directory
   rescue ScriptError, IOError => e
-    puts e
+    puts e unless options[:verbose] == false
     visit = VisitRawDataDirectory.new(raw_directory)
     begin
       visit.scan(options)
@@ -78,7 +85,15 @@ def list_visit(raw_directory, options = {})
   # Output a pretty version of the visit details.
   # Visit is Either a RawVisitDataDirectory or a RawVisitDataDirectoryResource,
   # and either should respond to to_s
-  visit.to_s
+  #
+  # Either output the entire visit (or if a search is requested) just the 
+  # datasets that match the search.
+  unless options[:grep]
+    visit.to_s
+  else
+    datasets = visit.datasets.select{ |ds| ds.series_description =~ /#{options[:grep]}/i }
+    puts datasets.collect {|ds| ds.methods.include?('directory') ? ds.directory : ds.path }
+  end
 
 end
 
@@ -93,6 +108,11 @@ def parse_options
     
     opts.on('-v', '--verbose', "Be wordy.") do
       options[:verbose] = true
+    end
+    
+    opts.on('-g', '--grep GREP', "Search series descriptions") do |grep|
+      options[:grep] = grep
+      options[:verbose] = false
     end
     
     opts.on_tail('-h', '--help',          "Show this message")          { puts(parser); exit }
