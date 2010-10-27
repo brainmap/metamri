@@ -40,11 +40,17 @@ require 'metamri'
 def run!
   options = parse_options
   
-  # Default to scanning the current directory if no argument was given.
-  raw_directory = ARGV[0] ||= Dir.pwd
-  raw_directory = File.expand_path(raw_directory)
+  # Default to scanning the current directory if no argument was given,
+  # otherwise go through each list.
+  unless ARGV.length == 1
+    input_directories = ARGV
+  else
+    input_directories = ARGV[0]
+  end
   
-  list_visit raw_directory, options
+  input_directories.each do |raw_directory|
+    list_visit raw_directory, options
+  end
   
 end
 
