@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{metamri}
-  s.version = "0.1.22"
+  s.version = "0.1.23"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2010-10-05}
+  s.date = %q{2010-11-16}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
   s.executables = ["import_study.rb", "import_visit.rb", "import_respiratory_files.rb", "list_visit", "convert_visit.rb"]
@@ -40,6 +40,10 @@ Gem::Specification.new do |s|
      "lib/metamri/visit_raw_data_directory_resource.rb",
      "metamri.gemspec",
      "test/fixtures/respiratory_fixtures.yaml",
+     "test/fixtures/s03_bravo.0156",
+     "test/fixtures/thumbnail.png",
+     "test/fixtures/thumbnail_slicer.png",
+     "test/helper_spec.rb",
      "test/nifti_builder_spec.rb",
      "test/raw_image_dataset_test.rb",
      "test/raw_image_dataset_thumbnail_spec.rb",
@@ -58,7 +62,8 @@ Gem::Specification.new do |s|
      "test/raw_image_file_test.rb",
      "test/visit_duplication_test.rb",
      "test/visit_test.rb",
-     "test/raw_image_dataset_thumbnail_spec.rb"
+     "test/raw_image_dataset_thumbnail_spec.rb",
+     "test/helper_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
