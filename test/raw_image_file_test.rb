@@ -8,15 +8,16 @@ require 'metamri/raw_image_file'
 
 class RawImageFileTest < Test::Unit::TestCase
   def setup
-    @GE_IFile = 'fixtures/I.001'
-    @Dicom = 'fixtures/S4_EFGRE3D.0001'
-    @EarlyGEPfile = 'fixtures/P59392.7'
-    @LateGEPfile = 'fixtures/P27648.7'
-    @notafile = 'fixtures/XXX.XXX'
-    @ged = RawImageFile.new(@GE_IFile)
-    @did = RawImageFile.new(@Dicom)
-    @egep = RawImageFile.new(@EarlyGEPfile)
-    @lgep = RawImageFile.new(@LateGEPfile)
+    # @GE_IFile = 'fixtures/I.001'
+    # @Dicom = 'fixtures/S4_EFGRE3D.0001'
+    # @EarlyGEPfile = 'fixtures/P59392.7'
+    # @LateGEPfile = 'fixtures/P27648.7'
+    # @notafile = 'fixtures/XXX.XXX'
+    # @ged = RawImageFile.new(@GE_IFile)
+    # @did = RawImageFile.new(@Dicom)
+    # @egep = RawImageFile.new(@EarlyGEPfile)
+    # @lgep = RawImageFile.new(@LateGEPfile)
+    @RubyDicom = 'fixtures/s03_bravo.0156'
   end
 
   def test_gehdr_dicom_init
@@ -27,6 +28,11 @@ class RawImageFileTest < Test::Unit::TestCase
   def test_dicomhdr_dicom_init
     assert_nothing_raised do
       RawImageFile.new(@Dicom)
+    end
+  end
+  def test_rubydicom_dicom_init
+    assert_nothing_raised do
+      RawImageFile.new(@RubyDicom)
     end
   end
   def test_early_gehdr_pfile_init

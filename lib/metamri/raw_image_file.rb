@@ -1,7 +1,8 @@
-
+require 'pp'
 require 'rubygems';
 require 'yaml';
 require 'sqlite3';
+require 'dicom'
 
 =begin rdoc
 Implements a collection of metadata associated with a raw image file.  In
@@ -17,6 +18,7 @@ class RawImageFile
   MIN_HDR_LENGTH = 400
   DICOM_HDR = "dicom_hdr"
   RDGEHDR = "rdgehdr"
+  RUBYDICOM_HDR = "rubydicom"
   MONTHS = {
     :jan => "01", :feb => "02", :mar => "03", :apr => "04", :may => "05", 
     :jun => "06", :jul => "07", :aug => "08", :sep => "09", :oct => "10", 
@@ -61,6 +63,14 @@ class RawImageFile
   attr_reader :bold_reps
   # Import Warnings - Fields that could not be read.
   attr_reader :warnings
+  # Serialized RubyDicomHeader Object (for DICOMs only)
+  attr_reader :dicom_header
+  # DICOM Sequence UID
+  attr_reader :dicom_sequence_uid
+  # DICOM Series UID
+  attr_reader :dicom_series_uid
+  # DICOM Study UID
+  attr_reader :dicom_study_uid
 
 =begin rdoc
 Creates a new instance of the class given a path to a valid image file.
@@ -82,7 +92,6 @@ temporary file.
     # try to read the header, raise an IOError if unsuccessful
     begin
       @hdr_data, @hdr_reader = read_header(absfilepath)
-      #puts "@hdr_data: #{@hdr_data}; @hdr_reader: #{@hdr_reader}"
     rescue Exception => e
       raise(IOError, "Header not readable for file #{@filename}. #{e}")
     end
@@ -250,12 +259,15 @@ private
 
 =begin rdoc
 Reads the file header using one of the available header reading utilities. 
-Returns both the header data as a one big string, and the name of the utility 
+Returns both the header data as either a RubyDicom object or one big string, and the name of the utility 
 used to read it.
 
 Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
 =end
   def read_header(absfilepath)
+    # header = DICOM::DObject.new(absfilepath)
+    # return [header, RUBYDICOM_HDR] if defined? header.read_success && header.read_success
+    
     header = `#{DICOM_HDR} '#{absfilepath}' 2> /dev/null`
     #header = `#{DICOM_HDR} #{absfilepath}`
     if ( header.index("ERROR") == nil and 
@@ -292,10 +304,20 @@ Parses the header data and extracts a collection of instance variables.  If
 =end
   def import_hdr
     raise(IndexError, "No Header Data Available.") if @hdr_data == nil
-    dicom_hdr_import if (@hdr_reader == "dicom_hdr")
-    rdgehdr_import if (@hdr_reader == "rdgehdr")
+    case @hdr_reader
+      when "rubydicom" then rubydicom_hdr_import
+      when "dicom_hdr" then dicom_hdr_import
+      when "rdgehdr" then rdgehdr_import
+    end
   end
 
+
+=begin rdoc
+Extract a collection of metadata from @hdr_data retrieved using RubyDicom
+=end
+def rubydicom_hdr_import
+  
+end
 
 =begin rdoc
 Extracts a collection of metadata from @hdr_data retrieved using the dicom_hdr
