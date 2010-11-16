@@ -24,10 +24,11 @@ describe "Create a thumbnail png for display." do
   end
   
   before(:each) do
-    tmpdir = Dir.mktmpdir
-    Pathname.new(@fixture_path).prep_mise_to(tmpdir)
-    @dataset_wd = File.join(tmpdir, File.basename(@fixture_path))
+    @tmpdir = Dir.mktmpdir
+    Pathname.new(@fixture_path).prep_mise_to(@tmpdir)
+    @dataset_wd = File.join(@tmpdir, File.basename(@fixture_path))
     @ds = RawImageDataset.new(@dataset_wd, RawImageFile.new(File.join(@dataset_wd, 's10_cubet2.0001')))
+    @test_niftis = []
   end
   
   it "should create a thumbnail in a tmpdir without a specified path." do
@@ -70,7 +71,7 @@ describe "Create a thumbnail png for display." do
   
   after(:each) do
     # @test_niftis.flatten.each { |nifti| File.delete(nifti) } unless @test_niftis.empty?
-    # [@output_directories, Dir.tmpdir, '/tmp'].flatten.each do |temp_dir|
+    # [@output_directories, @tmpdir, '/tmp'].flatten.each do |temp_dir|
     #   Dir.foreach(temp_dir) {|f| File.delete(File.join(temp_dir, f)) if File.extname(f) == '.nii'}
     # end
   end

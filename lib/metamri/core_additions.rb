@@ -5,6 +5,12 @@ class String
     mgsub([[/[\s\:\)\(\/\?\,]+/, "-"], [/\*/, "star"], [/\./,""]])
   end
   
+  # Does some basic string replacements to ensure valid directory names.
+  def escape_dirname
+    mgsub( [ [/[\s\:\)\(\?\,]+/, "-"], [/\*/, "star"] ] )
+  end
+  
+  
   # gsub multiple pairs of regexp's
   def mgsub(key_value_pairs=[].freeze)
     regexp_fragments = key_value_pairs.collect { |k,v| k }
