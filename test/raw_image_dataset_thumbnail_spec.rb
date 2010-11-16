@@ -1,9 +1,8 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
 require 'spec'
+require 'helper_spec'
 require 'escoffier'
-require 'tmpdir'
-# require 'metamri'
 require 'metamri/core_additions'
 require 'metamri/raw_image_dataset'
 require 'metamri/raw_image_file'
@@ -20,7 +19,7 @@ describe "Create a thumbnail png for display." do
     #   FileUtils.cp_r(VISIT_FIXTURE, VISIT_FIXTURE_UNZIPPED)
     #   `find #{VISIT_FIXTURE_UNZIPPED} -name '*.bz2' -exec bunzip2 {} \\;`
     # end
-    @fixture_path = '/Data/vtrak1/raw/johnson.merit220.visit1/mrt00033_830_04232010/dicoms/s10_cubet2'
+    @fixture_path = File.join($MRI_DATA, 'mrt00000_000_010101', 'dicoms', 's10_cubet2')
   end
   
   before(:each) do
@@ -28,6 +27,8 @@ describe "Create a thumbnail png for display." do
     Pathname.new(@fixture_path).prep_mise_to(@tmpdir)
     @dataset_wd = File.join(@tmpdir, File.basename(@fixture_path))
     @ds = RawImageDataset.new(@dataset_wd, RawImageFile.new(File.join(@dataset_wd, 's10_cubet2.0001')))
+    @valid_thumbnail = File.join('fixtures', 'thumbnail.png')
+    @valid_thumbnail_slicer = File.join('fixtures', 'thumbnail_slicer.png')
     @test_niftis = []
   end
   
@@ -37,6 +38,7 @@ describe "Create a thumbnail png for display." do
     
     File.basename(t.path).should == 'Sag-CUBE-T2.png'
     File.exist?(t.path).should be_true
+    File.compare(@valid_thumbnail, t.path).should be true
   end
   
   it "should create a thumbnail with a specified path." do
@@ -48,10 +50,11 @@ describe "Create a thumbnail png for display." do
     
     t.path.should == output_filename
     File.exist?(t.path).should be_true
+    File.compare(@valid_thumbnail, t.path).should be true
     
   end
   
-  it "should create a thumbnail with a specified path and filename." do
+  it "should create a thumbnail with an absolute path to file." do
     output_filename = "/tmp/test.png"
     File.delete(output_filename) if File.exist?(output_filename)
     
@@ -60,13 +63,35 @@ describe "Create a thumbnail png for display." do
     
     t.path.should == '/tmp/test.png'
     File.exist?(t.path).should be_true
+    File.compare(@valid_thumbnail, t.path).should be true
   end
+  
+  it "should create a thumbnail with a relative path to file." do
+    output_filename = "test.png"
+    File.delete(output_filename) if File.exist?(output_filename)
+    
+    t = RawImageDatasetThumbnail.new(@ds)
+    t.create_thumbnail(output_filename)
+    
+    File.exist?(t.path).should be_true
+    File.compare(@valid_thumbnail, t.path).should be true
+  end
+  
   
   it "should raise a ScriptError if the file could not be created." do
     t = RawImageDatasetThumbnail.new(@ds)
     
     File.stub!(:exist?).and_return(false)
-    lambda { t.create_thumbnail }.should raise_error(ScriptError, /Error creating thumbnail/ )    
+    lambda { t.create_thumbnail }.should raise_error(ScriptError, /Error creating thumbnail/ )
+  end
+  
+  it "should create a thumbnail in a tmpdir without a specified path using FSL Slicer." do
+    t = RawImageDatasetThumbnail.new(@ds)
+    t.create_thumbnail(nil, {:processor => :slicer})
+    
+    File.basename(t.path).should == 'Sag-CUBE-T2.png'
+    File.exist?(t.path).should be_true
+    File.compare(@valid_thumbnail_slicer, t.path).should be true
   end
   
   after(:each) do

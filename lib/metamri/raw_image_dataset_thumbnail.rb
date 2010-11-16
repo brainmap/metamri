@@ -1,11 +1,24 @@
-require 'dicom'
-require 'RMagick'
 require 'tmpdir'
+begin
+  %W{dicom RMagick}.each do |lib|
+    require lib
+  end
+rescue LoadError => e
+  raise LoadError, "Could not load #{e}.  Thumbnailing will use slicer instead of ruby-dicom."
+end
+  
 
 # This class is a ruby object encapsulating a .png 2D Thumbnail of a Dataset
+# Initialize it with an #RawImageDataset
 class RawImageDatasetThumbnail
+  VALID_PROCESSORS = [:rubydicom, :slicer]
 
-  attr_reader :dataset, :path
+  # The parent #RawImageDataset
+  attr_reader :dataset
+  # The path to the thumbnail image if it's already been created
+  attr_reader :path
+  # The processor for creating the thumbnail (:rubydicom or :slicer)
+  attr_reader :processor
 
   def initialize(dataset)
     if dataset.class == RawImageDataset
@@ -19,44 +32,66 @@ class RawImageDatasetThumbnail
     @path ||= create_thumbnail
   end
   
-  # Returns the path of png and sets the instance variable 'path' after successfull creation.
+  # Creates a thumbnail image (.png or .jpg) and returns the full file path of the thumbnail.
   # Raises a ScriptError if the thumbnail could not be created.
   # Raises a StandardError if the format is incorrect (i.e. P-file instead of DICOM)
   # 
   # Be sure your filename is a valid unix filename - no spaces.
-  #
   # Sets the @path instance variable and returns the full filename to the thumbnail.
-  def create_thumbnail(output = nil)
+  #
+  # Pass in either a absolute or relative path or filename for the output image,
+  # and an options hash to manually specify the processor (Ruby Dicom or FSL Slicer).
+  #   {:processor => :rubydicom or :slicer}
+  # 
+  def create_thumbnail(output = nil, options = {:processor => :rubydicom})
     raise StandardError, "Thumbnail available only for DICOM format." unless dataset.raw_image_files.first.dicom?
     if output
       if File.directory?(output)
+        # output is a directory.  Set the output directory but leave filepath nil.
         output_directory = output.escape_dirname
       else
+        # output is a path.  Set the output_directory and specify that the full filepath is already complete.
         output_directory = File.dirname(output).escape_dirname
-        png_filepath = output
+        filepath = output
       end
     else
+      # If no output was given, default to a new temp directory.
       output_directory = Dir.mktmpdir
     end
-    name = @dataset.series_description.escape_filename
-    puts png_filepath ||= File.join(output_directory, name + '.png')
-    nifti_filepath ||=  File.join(output_directory, name + '.nii')
+    
+    @processor = options[:processor]
+        
+    # Set a default filepath unless one was explicitly passed in.
+    default_name = @dataset.series_description.escape_filename
+    filepath ||= File.join(output_directory, default_name + '.png')
     
     begin
-      @path = create_thumbnail_with_rubydicom(png_filepath)
+      case @processor
+      when :rubydicom
+        @path = create_thumbnail_with_rubydicom(filepath)
+      when :slicer
+        @path = create_thumbnail_with_fsl_slicer(filepath)
+      end
     rescue RangeError, ScriptError => e
-      puts "Could not create thumbnail with rubydicom.  Trying FSL slicer."
-      @path = create_thumbnail_with_fsl_slicer(output_directory, nifti_filepath, png_filepath)
+      unless @processor == :slicer 
+        puts "Could not create thumbnail with rubydicom.  Trying FSL slicer."
+        @processor = :slicer
+        retry
+      else 
+        raise e
+      end
     end
     
+    raise ScriptError, "Could not create thumbnail from #{@dataset.series_description} - #{File.join(@dataset.directory, @dataset.scanned_file)}" unless @path && File.readable?(@path) 
     return @path
   end
   
   private
   
+  # Creates a thumbnail using RubyDicom
+  # Pass in an absolute or relative filepath, including filename and extension.
+  # Returns an absolute path to the created thumbnail image.
   def create_thumbnail_with_rubydicom(output_file)
-    puts "ruby-dicom: " + output_file.to_s
-    
     output_file = File.expand_path(output_file)
 
     dicom_files = Dir.glob(File.join(dataset.directory, dataset.glob))
@@ -75,21 +110,26 @@ class RawImageDatasetThumbnail
       image.write(output_file)
     end
 
+    raise(ScriptError, "Error creating thumbnail #{output_file}") unless File.exist?(output_file)
+
     return output_file
   end
   
-  def create_thumbnail_with_fsl_slicer(output_directory, nifti_filepath, png_filepath)
+  # Creates a thumbnail using FSL's Slicer bash utility.
+  # Pass in an output filepath.
+  def create_thumbnail_with_fsl_slicer(output_file)
+    nii_tmpdir = Dir.mktmpdir
+    nifti_output_file = File.basename(output_file, File.extname(output_file)) + '.nii'
     Pathname.new(dataset.directory).all_dicoms do |dicom_files| 
       # First Create a Nifti File to read 
-      @dataset.to_nifti!(output_directory, File.basename(png_filepath), {:input_directory => File.dirname(dicom_files.first)} )
+      @dataset.to_nifti!(nii_tmpdir, nifti_output_file, {:input_directory => File.dirname(dicom_files.first)} )
     end
-    
     # Then create the .png
-    `slicer #{nifti_filepath} -a #{png_filepath}`
+    `slicer #{File.join(nii_tmpdir, nifti_output_file)} -a #{output_file}`
     
-    raise(ScriptError, "Error creating thumbnail #{png_filepath}") unless File.exist?(png_filepath)
+    raise(ScriptError, "Error creating thumbnail #{output_file}") unless File.exist?(output_file)
     
-    return png_filepath
+    return output_file
   end
   
 end
