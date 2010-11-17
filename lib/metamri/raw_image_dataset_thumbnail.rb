@@ -20,6 +20,7 @@ class RawImageDatasetThumbnail
   # The processor for creating the thumbnail (:rubydicom or :slicer)
   attr_reader :processor
 
+  # Creates a RawImageDatasetThumbnail instance by passing in a parent dataset to thumbnail.
   def initialize(dataset)
     if dataset.class == RawImageDataset
       @dataset = dataset
@@ -37,14 +38,32 @@ class RawImageDatasetThumbnail
   # Raises a StandardError if the format is incorrect (i.e. P-file instead of DICOM)
   # 
   # Be sure your filename is a valid unix filename - no spaces.
-  # Sets the @path instance variable and returns the full filename to the thumbnail.
-  #
-  # Pass in either a absolute or relative path or filename for the output image,
-  # and an options hash to manually specify the processor (Ruby Dicom or FSL Slicer).
-  #   {:processor => :rubydicom or :slicer}
+  # 
+  # Returns the full absolute filename to the new thumbnail image and sets it to @path instance variable.
+  # 
+  # === Parameters
+  # 
+  # * <tt>output</tt>: An optional string which specifies a directory or filename for the thumbnail image.
+  # * <tt>options</tt>: A hash of additional options.
+  # 
+  # === Options
+  # 
+  # * <tt>:processor</tt> -- Symbol. Specifies which thumbnail processor to use.  Defaults to :rubydicom, alternatively it could be :slicer
+  # 
+  # === Examples
+  # 
+  #  # Load a RawImageDataset 
+  #  ds = RawImageDataset('s01_assetcal', RawImageFile.new('./s01_assetcal/I0001.dcm'))
+  #  # Create a RawImageDatasetThumbnail instance
+  #  thumb = RawImageDatasetThumbnail.new(ds)
+  #  # Create a thumbnail in a temp directory without options, save it to a destination image, or force it to use FSL Slicer.
+  #  thumb.create_thumbnail
+  #  thumb.create_thumbnail('/tmp/asset_cal.png')
+  #  thumb.create_thumbnail('/tmp/asset_cal.png', :processor => :slicer)
   # 
   def create_thumbnail(output = nil, options = {:processor => :rubydicom})
     raise StandardError, "Thumbnail available only for DICOM format." unless dataset.raw_image_files.first.dicom?
+    raise ArgumentError, "Invalid :processor option #{options[:processor]}" unless VALID_PROCESSORS.include?(options[:processor])
     if output
       if File.directory?(output)
         # output is a directory.  Set the output directory but leave filepath nil.
@@ -60,7 +79,7 @@ class RawImageDatasetThumbnail
     end
     
     @processor = options[:processor]
-        
+    
     # Set a default filepath unless one was explicitly passed in.
     default_name = @dataset.series_description.escape_filename
     filepath ||= File.join(output_directory, default_name + '.png')

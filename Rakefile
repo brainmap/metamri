@@ -4,19 +4,6 @@
 
 require 'rubygems'
 require 'rake'
-# require 'echoe'
-# 
-# Echoe.new('metamri', '0.1.0') do |p|
-#   p.description    = "Extraction of MRI metadata and insertion into compatible sqlite3 databases."
-#   p.url            = "http://github.com/brainmap/metamri"
-#   p.author         = "Kristopher J. Kosmatka"
-#   p.email          = "kk4@medicine.wisc.edu"
-#   p.ignore_pattern = ["nbproject/*"]
-#   p.development_dependencies = []
-# end
-# 
-# Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |ext| load ext }
-
 
 begin
   require 'jeweler'
@@ -35,4 +22,17 @@ begin
   Jeweler::GemcutterTasks.new
 rescue LoadError
   puts "Jeweler not available. Install it with: sudo gem install jeweler"
+end
+
+begin
+  require 'spec/rake/spectask'
+  Spec::Rake::SpecTask.new do |test|
+    test.warning = true
+    # test.rcov = true
+    test.spec_files = FileList['spec/**/*_spec.rb']
+  end
+rescue LoadError
+  task :spec do
+    abort "RSpec is not available.  In order to run specs, you must: sudo gem install rspec"
+  end
 end
