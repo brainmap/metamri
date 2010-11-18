@@ -4,21 +4,23 @@ require 'yaml';
 require 'sqlite3';
 require 'dicom'
 
-=begin rdoc
-Implements a collection of metadata associated with a raw image file.  In
-this case, by image we mean one single file.  For the case of Pfiles one file
-corresponds to a complete 4D data set.  For dicoms one file corresponds to a single
-2D slice, many of which are assembled later during reconstruction to create a
-4D data set.  The motivation for this class is to provide access to the metadata
-stored in image file headers so that they can be later reconstructed into nifti
-data sets.
-=end
+
+# Implements a collection of metadata associated with a raw image file.  In
+# this case, by image we mean one single file.  For the case of Pfiles one file
+# corresponds to a complete 4D data set.  For dicoms one file corresponds to a single
+# 2D slice, many of which are assembled later during reconstruction to create a
+# 4D data set.  The motivation for this class is to provide access to the metadata
+# stored in image file headers so that they can be later reconstructed into nifti
+# data sets.
+# 
+# Primarily used to instantiate #RawImageDatasets
 class RawImageFile
   #:stopdoc:
   MIN_HDR_LENGTH = 400
   DICOM_HDR = "dicom_hdr"
   RDGEHDR = "rdgehdr"
   RUBYDICOM_HDR = "rubydicom"
+  VALID_HEADERS = [DICOM_HDR, RDGEHDR, RUBYDICOM_HDR]
   MONTHS = {
     :jan => "01", :feb => "02", :mar => "03", :apr => "04", :may => "05", 
     :jun => "06", :jul => "07", :aug => "08", :sep => "09", :oct => "10", 
@@ -43,6 +45,10 @@ class RawImageFile
   # A short string describing the acquisition sequence. These come from the scanner.
   # code and are used to initialise SeriesDescription objects to find related attributes.
   attr_reader :series_description
+  # A short string describing the study sequence. These come from the scanner.
+  attr_reader :study_description
+  # A short string describing the study protocol. These come from the scanner.
+  attr_reader :protocol_name
   # M or F.
   attr_reader :gender
   # Number of slices in the data set that includes this file, used by AFNI for reconstruction.
@@ -65,23 +71,25 @@ class RawImageFile
   attr_reader :warnings
   # Serialized RubyDicomHeader Object (for DICOMs only)
   attr_reader :dicom_header
-  # DICOM Sequence UID
-  attr_reader :dicom_sequence_uid
+  # Hash of all DICOM Tags including their Names and Values (See #dicom_taghash for more information on the structure)
+  attr_reader :dicom_taghash
   # DICOM Series UID
   attr_reader :dicom_series_uid
   # DICOM Study UID
   attr_reader :dicom_study_uid
-
-=begin rdoc
-Creates a new instance of the class given a path to a valid image file.
-
-Throws IOError if the file given is not found or if the available header reading
-utilities cannot read the image header.  Also raises IOError if any of the
-attributes cannot be found in the header.  Be aware that the filename used to
-initialize your instance is used to set the "file" attribute.  If you need to
-unzip a file to a temporary location, be sure to keep the same filename for the
-temporary file.
-=end
+  # Scan Tech Initials
+  attr_reader :operator_name
+  # Patient "Name", usually StudyID or ENUM
+  attr_reader :patient_name
+  
+  # Creates a new instance of the class given a path to a valid image file.
+  # 
+  # Throws IOError if the file given is not found or if the available header reading
+  # utilities cannot read the image header.  Also raises IOError if any of the
+  # attributes cannot be found in the header.  Be aware that the filename used to
+  # initialize your instance is used to set the "file" attribute.  If you need to
+  # unzip a file to a temporary location, be sure to keep the same filename for the
+  # temporary file.
   def initialize(pathtofile)
     # raise an error if the file doesn't exist
     absfilepath = File.expand_path(pathtofile)
@@ -104,9 +112,9 @@ temporary file.
     begin
       import_hdr
     rescue ScriptError => e
-      raise ScriptError, "Could not find required DICOM Header Meta Element: #{e}"
-    rescue Exception => e
-      raise IOError, "Header import failed for file #{@filename}.  #{e}"
+      raise e, "Could not find required DICOM Header Meta Element: #{e}"
+    # rescue StandardError => e
+    #   raise e, "Header import failed for file #{@filename}.  #{e}"
     end
     
     # deallocate the header data to save memory space.
@@ -114,37 +122,31 @@ temporary file.
   end
   
 
-=begin rdoc
-Predicate method that tells whether or not the file is actually an image.  This
-judgement is based on whether one of the available header reading utilities can
-actually read the header information.
-=end
+
+  # Predicate method that tells whether or not the file is actually an image.  This
+  # judgement is based on whether one of the available header reading utilities can
+  # actually read the header information.
   def image?
-    return ( @hdr_reader == RDGEHDR or @hdr_reader == DICOM_HDR )
+    return ( VALID_HEADERS.include? @hdr_reader )
   end
   
   
-=begin rdoc
-Predicate simply returns true if "pfile" is stored in the @img_type instance variable.
-=end
+
+  # Predicate simply returns true if "pfile" is stored in the @img_type instance variable.
   def pfile?
     return @file_type == "pfile"
   end
 
 
-=begin rdoc
-Predicate simply returns true if "dicom" is stored in the img_type instance variable.
-=end
+  # Predicate simply returns true if "dicom" is stored in the img_type instance variable.
   def dicom?
     return @file_type == "dicom"
   end
   
   
-=begin rdoc
-Returns a yaml string based on a subset of the attributes.  Specifically,
-the @hdr_data is not included.  This is used to generate .yaml files that are 
-placed in image directories for later scanning by YamlScanner.
-=end
+  # Returns a yaml string based on a subset of the attributes.  Specifically,
+  # the @hdr_data is not included.  This is used to generate .yaml files that are 
+  # placed in image directories for later scanning by YamlScanner.
   def to_yaml
     yamlhash = {}
     instance_variables.each do |var|
@@ -154,11 +156,9 @@ placed in image directories for later scanning by YamlScanner.
   end
  
    
-=begin rdoc
-Returns the internal, parsed data fields in an array. This is used when scanning
-dicom slices, to compare each dicom slice in a folder and make sure they all hold the
-same data.
-=end
+  # Returns the internal, parsed data fields in an array. This is used when scanning
+  # dicom slices, to compare each dicom slice in a folder and make sure they all hold the
+  # same data.
   def to_array
     return [@filename,
     @timestamp,
@@ -173,11 +173,9 @@ same data.
     @acquisition_matrix_y]
   end
   
-=begin rdoc
-Returns an SQL statement to insert this image into the raw_images table of a 
-compatible database (sqlite3).  This is intended for inserting into the rails
-backend database.
-=end
+  # Returns an SQL statement to insert this image into the raw_images table of a 
+  # compatible database (sqlite3).  This is intended for inserting into the rails
+  # backend database.
   def db_insert(image_dataset_id)
     "INSERT INTO raw_image_files
     (filename, header_reader, file_type, timestamp, source, rmr_number, series_description, 
@@ -189,27 +187,21 @@ backend database.
     #{@bold_reps}, '#{DateTime.now}', '#{DateTime.now}', #{image_dataset_id})"
   end
 
-=begin rdoc
-Returns an SQL statement to select this image file row from the raw_image_files table
-of a compatible database.
-=end
+  # Returns an SQL statement to select this image file row from the raw_image_files table
+  # of a compatible database.
   def db_fetch
     "SELECT *" + from_table_where + sql_match_conditions
   end
   
-=begin rdoc
-Returns and SQL statement to remove this image file from the raw_image_files table
-of a compatible database.
-=end
+  # Returns and SQL statement to remove this image file from the raw_image_files table
+  # of a compatible database.
   def db_remove
     "DELETE" + from_table_where + sql_match_conditions
   end
   
   
-=begin rdoc
-Uses the db_insert method to actually perform the database insert using the 
-specified database file.
-=end  
+  # Uses the db_insert method to actually perform the database insert using the 
+  # specified database file.
   def db_insert!( db_file )
     db = SQLite3::Database.new( db_file )
     db.transaction do |database|
@@ -221,20 +213,16 @@ specified database file.
     db.close
   end
 
-=begin rdoc
-Removes this instance from the raw_image_files table of the specified database.
-=end
+  # Removes this instance from the raw_image_files table of the specified database.
   def db_remove!( db_file )
     db = SQLite3::Database.new( db_file )
     db.execute( db_remove )
     db.close
   end
   
-=begin rdoc
-Finds the row in the raw_image_files table of the given db file that matches this object.
-ORM is based on combination of rmr_number, timestamp, and filename.  The row is returned 
-as an array of values (see 'sqlite3' gem docs).
-=end
+  # Finds the row in the raw_image_files table of the given db file that matches this object.
+  # ORM is based on combination of rmr_number, timestamp, and filename.  The row is returned 
+  # as an array of values (see 'sqlite3' gem docs).
   def db_fetch!( db_file )
     db = SQLite3::Database.new( db_file )
     db_row = db.execute( db_fetch )
@@ -257,16 +245,14 @@ private
     "rmr_number = '#{@rmr_number}' AND timestamp = '#{@timestamp.to_s}' AND filename = '#{@filename}'"
   end
 
-=begin rdoc
-Reads the file header using one of the available header reading utilities. 
-Returns both the header data as either a RubyDicom object or one big string, and the name of the utility 
-used to read it.
-
-Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
-=end
+  # Reads the file header using one of the available header reading utilities. 
+  # Returns both the header data as either a RubyDicom object or one big string, and the name of the utility 
+  # used to read it.
+  # 
+  # Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
   def read_header(absfilepath)
-    # header = DICOM::DObject.new(absfilepath)
-    # return [header, RUBYDICOM_HDR] if defined? header.read_success && header.read_success
+    header = DICOM::DObject.new(absfilepath)
+    return [header, RUBYDICOM_HDR] if defined? header.read_success && header.read_success
     
     header = `#{DICOM_HDR} '#{absfilepath}' 2> /dev/null`
     #header = `#{DICOM_HDR} #{absfilepath}`
@@ -285,12 +271,10 @@ Note: The rdgehdr is a binary file; the correct version for your architecture mu
   end
 
 
-=begin rdoc
-Returns a string that indicates the file type.  This is difficult because dicom
-files have no consistent naming conventions/suffixes.  Here we chose to call a
-file a "pfile" if it is an image and the file name is of the form P*.7
-All other images are called "dicom".
-=end
+  # Returns a string that indicates the file type.  This is difficult because dicom
+  # files have no consistent naming conventions/suffixes.  Here we chose to call a
+  # file a "pfile" if it is an image and the file name is of the form P*.7
+  # All other images are called "dicom".
   def determine_file_type
     return "pfile" if image? and (@filename =~ /^P.....\.7/) != nil
     return "dicom" if image? and (@filename =~ /^P.....\.7/) == nil
@@ -298,10 +282,8 @@ All other images are called "dicom".
   end
 
 
-=begin rdoc
-Parses the header data and extracts a collection of instance variables.  If 
-@hdr_data and @hdr_reader are not already availables, this function does nothing.
-=end
+  # Parses the header data and extracts a collection of instance variables.  If 
+  # @hdr_data and @hdr_reader are not already available, this function does nothing.
   def import_hdr
     raise(IndexError, "No Header Data Available.") if @hdr_data == nil
     case @hdr_reader
@@ -312,17 +294,142 @@ Parses the header data and extracts a collection of instance variables.  If
   end
 
 
-=begin rdoc
-Extract a collection of metadata from @hdr_data retrieved using RubyDicom
-=end
-def rubydicom_hdr_import
-  
-end
+  # Extract a collection of metadata from @hdr_data retrieved using RubyDicom
+  # 
+  #   Here are some example DICOM Tags and Values
+  #   0008,0022 Acquisition Date                     DA      8 20101103
+  #   0008,0030 Study Time                           TM      6 101538
+  #   0008,0080 Institution Name                     LO      4 Institution
+  #   0008,1010 Station Name                         SH      8 Station
+  #   0008,1030 Study Description                    LO     12 PILOT Study
+  #   0008,103E Series Description                   LO     12 3pl loc FGRE
+  #   0008,1070 Operators' Name                      PN      2 SP
+  #   0008,1090 Manufacturer's Model Name            LO     16 DISCOVERY MR750
+  #   0010,0010 Patient's Name                       PN     12 mosPilot
+  #   0010,0020 Patient ID                           LO     12 RMREKKPilot
+  #   0010,0040 Patient's Sex                        CS      2 F
+  #   0010,1010 Patient's Age                        AS      4 027Y
+  #   0010,1030 Patient's Weight                     DS      4 49.9
+  #   0018,0023 MR Acquisition Type                  CS      2 2D
+  #   0018,0050 Slice Thickness                      DS      2 10
+  #   0018,0080 Repetition Time                      DS      6 5.032
+  #   0018,0081 Echo Time                            DS      6 1.396
+  #   0018,0082 Inversion Time                       DS      2 0
+  #   0018,0083 Number of Averages                   DS      2 1
+  #   0018,0087 Magnetic Field Strength              DS      2 3
+  #   0018,0088 Spacing Between Slices               DS      4 12.5
+  #   0018,0091 Echo Train Length                    IS      2 1
+  #   0018,0093 Percent Sampling                     DS      4 100
+  #   0018,0094 Percent Phase Field of View          DS      4 100
+  #   0018,0095 Pixel Bandwidth                      DS      8 244.141
+  #   0018,1000 Device Serial Number                 LO     16 0000006080000
+  #   0018,1020 Software Version(s)                  LO     42 21\LX\MR Software release:20..
+  #   0018,1030 Protocol Name                        LO     22 MOSAIC Pilot 02Nov2010
+  #   0018,1100 Reconstruction Diameter              DS      4 240
+  #   0018,1250 Receive Coil Name                    SH      8 8HRBRAIN
+  #   0018,1310 Acquisition Matrix                   US      8 0\256\128\0
+  #   0018,1312 In-plane Phase Encoding Direction    CS      4 ROW
+  #   0018,1314 Flip Angle                           DS      2 30
+  #   0018,1315 Variable Flip Angle Flag             CS      2 N
+  #   0018,1316 SAR                                  DS      8 0.498088
+  #   0020,000D Study Instance UID                   UI     52 1.2.840.113619.6.260.4.88937..
+  #   0020,000E Series Instance UID                  UI     54 1.2.840.113619.2.260.6945.23..
+  #   0020,0010 Study ID                             SH      4 1260
+  #   0020,0011 Series Number                        IS      2 1
+  #   0020,0012 Acquisition Number                   IS      2 1
+  #   0020,0013 Instance Number                      IS      2 1
+  #   0020,0032 Image Position (Patient)             DS     22 -119.531\-159.531\-25
+  #   0020,1002 Images in Acquisition                IS      2 15
+  #   0028,0010 Rows                                 US      2 256
+  #   0028,0011 Columns                              US      2 256
+  #   0028,0030 Pixel Spacing                        DS     14 0.9375\0.9375
+  def rubydicom_hdr_import
+    dicom_tag_attributes = {
+      :source => "0008,1010",
+      :series_description => "0008,103E",
+      :study_description => "0008,1030",
+      :operator_name => "0008,1070",
+      :patient_name => "0010,0010",
+      :rmr_number => "0010,0020",
+      :gender => "0010,0040",
+      :slice_thickness => "0018,0050",
+      :reconstruction_diameter => "0018,1100",
+      :rep_time => "0018,0080",
+      :pixel_spacing => "0028,0030",
+      :flip_angle => "0018,1314",
+      :field_strength => "0018,0087",
+      :slice_spacing => "0018,0088",
+      :software_version => "0018,1020",
+      :protocol_name => "0018,1030",
+      :bold_reps => "0020,0105",
+      :dicom_series_uid => "0020,000E",
+      :dicom_study_uid => "0020,000D",
+      :study_id => "0020,0010",
+      :num_slices => "0020,1002",
+      :acquisition_matrix_x => "0028,0010",
+      :acquisition_matrix_y => "0028,0011"
+    }
 
-=begin rdoc
-Extracts a collection of metadata from @hdr_data retrieved using the dicom_hdr
-utility.  
-=end
+    
+    dicom_tag_attributes.each_pair do |name, tag|
+      begin
+        # next if tag_hash[:type] == :datetime
+        value = @hdr_data[tag].value if @hdr_data[tag]
+        raise ScriptError, "No match found for #{name}" unless value
+        instance_variable_set("@#{name.to_s}", value)
+      rescue ScriptError => e
+        @warnings << "Tag #{name} could not be found."
+      end
+    end
+    
+    @timestamp = DateTime.parse(@hdr_data["0008,0022"].value + @hdr_data["0008,0030"].value)
+    @dicom_taghash = create_dicom_taghash(@hdr_data)
+    # @dicom_header = remove_long_dicom_elements(@hdr_data)
+
+  end
+  
+  # # Remove long data elements from a rubydicom header.  This essentially strips 
+  # # lengthy image data.
+  # def remove_long_dicom_elements(header)
+  #   raise ScriptError, "A DICOM::DObject instance is required" unless header.kind_of? DICOM::DObject
+  #   h = header.dup
+  #   h.children.select { |element| element.length > 100 }.each do |e|
+  #     h.remove(e.tag)
+  #     # puts "Removing #{e.tag}..."
+  #   end
+  #   return h
+  # end
+  
+  # Create a super-lightweight representation of the DICOM header as a hash, where
+  # the tags are they keys and name and value are stored as an attribute hash in value.
+  # 
+  # Creates a hash like:
+  #  {"0018,0095"=>{:value=>"244.141", :name=>"Pixel Bandwidth"},
+  #   "0008,1030"=>{:value=>"MOSAIC PILOT", :name=>"Study Description"} }
+  # 
+  # When serialized with yaml, this looks like:
+  # 
+  #  0018,0095: 
+  #    :value: "244.141"
+  #    :name: Pixel Bandwidth
+  #   
+  #  0008,1030: 
+  #    :value: MOSAIC PILOT
+  #    :name: Study Description
+  # 
+  # To filter and search, you can do something like:
+  # tag_hash.each_pair {|tag, attributes| puts tag, attributes[:value] if attributes[:name] =~ /Description/i }
+  def create_dicom_taghash(header)
+    raise ScriptError, "A DICOM::DObject instance is required" unless header.kind_of? DICOM::DObject
+    h = Hash.new
+    header.children.each do |element|
+      h[element.tag] = {:value => element.instance_variable_get(:@value), :name => element.name}
+    end
+    return h
+  end
+
+  # Extracts a collection of metadata from @hdr_data retrieved using the dicom_hdr
+  # utility.  
   def dicom_hdr_import
     dicom_tag_templates = {}
     dicom_tag_templates[:rmr_number] = { 
@@ -431,10 +538,8 @@ utility.
   end
   
 
-=begin rdoc
-Extracts a collection of metadata from @hdr_data retrieved using the rdgehdr
-utility. 
-=end
+  # Extracts a collection of metadata from @hdr_data retrieved using the rdgehdr
+  # utility. 
   def rdgehdr_import
     source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i
     num_slices_pat =           /Number of slices in this scan group: ([0-9]+)/i

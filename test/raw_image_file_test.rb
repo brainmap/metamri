@@ -1,23 +1,24 @@
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
 
-$:.unshift File.join(File.dirname(__FILE__),'..','lib')
+require 'test_helper'
 
 require 'test/unit'
 require 'metamri/raw_image_file'
 
 class RawImageFileTest < Test::Unit::TestCase
   def setup
-    # @GE_IFile = 'fixtures/I.001'
-    # @Dicom = 'fixtures/S4_EFGRE3D.0001'
-    # @EarlyGEPfile = 'fixtures/P59392.7'
-    # @LateGEPfile = 'fixtures/P27648.7'
-    # @notafile = 'fixtures/XXX.XXX'
-    # @ged = RawImageFile.new(@GE_IFile)
-    # @did = RawImageFile.new(@Dicom)
-    # @egep = RawImageFile.new(@EarlyGEPfile)
-    # @lgep = RawImageFile.new(@LateGEPfile)
-    @RubyDicom = 'fixtures/s03_bravo.0156'
+    @GE_IFile = File.join($MRI_DATA), 'test_fixtures/I.001'
+    @Dicom = File.join($MRI_DATA), 'test_fixtures/S4_EFGRE3D.0001'
+    @EarlyGEPfile = File.join($MRI_DATA), 'test_fixtures/P59392.7'
+    @LateGEPfile = File.join($MRI_DATA), 'test_fixtures/P27648.7'
+    @GEX750Dicom = File.join($MRI_DATA), 'test_fixtures/s03_bravo.0156'
+    @notafile = File.join($MRI_DATA), 'test_fixtures/XXX.XXX'
+    @ged = RawImageFile.new(@GE_IFile)
+    @did = RawImageFile.new(@Dicom)
+    @egep = RawImageFile.new(@EarlyGEPfile)
+    @lgep = RawImageFile.new(@LateGEPfile)
+
   end
 
   def test_gehdr_dicom_init
@@ -32,7 +33,7 @@ class RawImageFileTest < Test::Unit::TestCase
   end
   def test_rubydicom_dicom_init
     assert_nothing_raised do
-      RawImageFile.new(@RubyDicom)
+      RawImageFile.new(@GEX750Dicom)
     end
   end
   def test_early_gehdr_pfile_init

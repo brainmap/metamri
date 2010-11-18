@@ -1,4 +1,5 @@
 require 'tmpdir'
+
 class String
   # Does same basic string replacements to ensure valid filenames.
   def escape_filename
@@ -146,3 +147,25 @@ class Pathname
   end
   
 end
+
+# =begin rdoc
+# Monkey-patch Float to avoid rounding errors.
+# For more in-depth discussion, see: http://www.ruby-forum.com/topic/179361
+# Currently not in use.
+# =end
+# class Float
+#   def <=> other
+#     puts epsilon = self * 1e-14
+#     diff = self - other
+#     # return -1 if diff > epsilon
+#     # return 1 if diff < -epsilon
+#     0
+#   end
+# 
+#   def == other  #because built-in Float#== bypasses <=>
+#     (self<=>other) == 0
+#     true
+#   end
+# end
+
+

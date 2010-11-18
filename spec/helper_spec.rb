@@ -10,7 +10,6 @@ require 'tmpdir'
 require 'fileutils'
 require 'yaml'
 require 'pp'
-require 'rubygems'
 
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 

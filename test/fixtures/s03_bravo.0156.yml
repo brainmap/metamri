@@ -1,0 +1,937 @@
+--- 
+0043,102E: 
+  :value: 
+  :name: Private
+"0043,1010": 
+  :value: 0
+  :name: Private
+0020,000E: 
+  :value: 1.2.840.113619.2.260.6945.1176948.30017.1288984188.384
+  :name: Series Instance UID
+0018,1315: 
+  :value: N
+  :name: Variable Flip Angle Flag
+0018,0094: 
+  :value: "100"
+  :name: Percent Phase Field of View
+0019,1084: 
+  :value: "0.433979"
+  :name: Private
+0018,1316: 
+  :value: "0.21699"
+  :name: SAR
+0009,1027: 
+  :value: 1289386829
+  :name: Private
+0043,102F: 
+  :value: 0
+  :name: Private
+0028,1050: 
+  :value: "2446"
+  :name: Window Center
+0018,0095: 
+  :value: "244.141"
+  :name: Pixel Bandwidth
+0008,1030: 
+  :value: RMRMABRAVOTEST
+  :name: Study Description
+0028,1051: 
+  :value: "4893"
+  :name: Window Width
+0043,108A: 
+  :value: COL
+  :name: Private
+0019,1087: 
+  :value: "0.000000"
+  :name: Private
+0009,10E9: 
+  :value: 1289386828
+  :name: Private
+0008,1140: 
+  :value: 
+  :name: Referenced Image Sequence
+0019,1088: 
+  :value: 0
+  :name: Private
+0019,10BA: 
+  :value: "0.000000"
+  :name: Private
+0019,10BB: 
+  :value: "0.000000"
+  :name: Private
+0019,10BC: 
+  :value: "0.000000"
+  :name: Private
+0021,104F: 
+  :value: 156
+  :name: Private
+7FE0,0010: 
+  :value: 
+  :name: Pixel Data
+0029,1026: 
+  :value: 2
+  :name: Private
+"0020,0052": 
+  :value: 1.2.840.113619.2.260.6945.1176948.30017.1288984188.382
+  :name: Frame of Reference UID
+0019,10A0: 
+  :value: 0
+  :name: Private
+0019,10BD: 
+  :value: "0.000000"
+  :name: Private
+0008,1090: 
+  :value: DISCOVERY MR750
+  :name: Manufacturer's Model Name
+0019,10A1: 
+  :value: 0
+  :name: Private
+0019,10BE: 
+  :value: "0.000000"
+  :name: Private
+0018,0020: 
+  :value: GR
+  :name: Scanning Sequence
+0019,10A2: 
+  :value: 5789
+  :name: Private
+0018,1000: 
+  :value: 0000000608WAISMR
+  :name: Device Serial Number
+"0010,0010": 
+  :value: Patient
+  :name: Patient's Name
+0018,0021: 
+  :value: SS\SK
+  :name: Sequence Variant
+0019,105A: 
+  :value: 246280416.0
+  :name: Private
+0019,10A3: 
+  :value: 0
+  :name: Private
+"0002,0000": 
+  :value: 208
+  :name: File Meta Information Group Length
+"0021,1035": 
+  :value: 1
+  :name: Private
+0018,0022: 
+  :value: FAST_GEMS\EDR_GEMS\ACC_GEMS
+  :name: Scan Options
+0019,1011: 
+  :value: 0
+  :name: Private
+0019,10A4: 
+  :value: 0
+  :name: Private
+"0002,0001": 
+  :value: 
+  :name: File Meta Information Version
+"0021,1036": 
+  :value: 5
+  :name: Private
+0018,0023: 
+  :value: 3D
+  :name: MR Acquisition Type
+0019,1012: 
+  :value: 74
+  :name: Private
+"0040,0242": 
+  :value: MR01OC1
+  :name: Performed Station Name
+"0002,0002": 
+  :value: 1.2.840.10008.5.1.4.1.1.4
+  :name: Media Storage SOP Class UID
+"0021,1037": 
+  :value: 16
+  :name: Private
+0018,0050: 
+  :value: "1"
+  :name: Slice Thickness
+"0040,0243": 
+  :value: MR01
+  :name: Performed Location
+"0002,0003": 
+  :value: 1.2.840.113619.2.260.6945.1176948.29385.1288985252.77
+  :name: Media Storage SOP Instance UID
+0019,10D2: 
+  :value: 0
+  :name: Private
+0008,0030: 
+  :value: "000000.00"
+  :name: Study Time
+0018,1030: 
+  :value: MERIT220 + TAMI/METS 101
+  :name: Protocol Name
+"0010,1010": 
+  :value: 028Y
+  :name: Patient's Age
+"0010,0040": 
+  :value: N
+  :name: Patient's Sex
+0018,0025: 
+  :value: N
+  :name: Angio Flag
+"0020,1040": 
+  :value: 
+  :name: Position Reference Indicator
+0019,108A: 
+  :value: 10
+  :name: Private
+0028,0002: 
+  :value: 1
+  :name: Samples per Pixel
+0019,10D3: 
+  :value: 
+  :name: Private
+0008,0005: 
+  :value: ISO_IR 100
+  :name: Specific Character Set
+0008,0031: 
+  :value: "110028"
+  :name: Series Time
+"0020,1041": 
+  :value: "94.84349823"
+  :name: Slice Location
+0019,108B: 
+  :value: 29
+  :name: Private
+0019,10A7: 
+  :value: "0.000000"
+  :name: Private
+0008,0032: 
+  :value: "110029"
+  :name: Acquisition Time
+"0025,1010": 
+  :value: 0
+  :name: Private
+0018,0080: 
+  :value: "8.132"
+  :name: Repetition Time
+0019,10A8: 
+  :value: "0.000000"
+  :name: Private
+0028,0030: 
+  :value: 1\1
+  :name: Pixel Spacing
+0028,0004: 
+  :value: MONOCHROME2
+  :name: Photometric Interpretation
+0008,0033: 
+  :value: "000000.00"
+  :name: Content Time
+0008,0060: 
+  :value: MR
+  :name: Modality
+"0025,1011": 
+  :value: 1
+  :name: Private
+0019,1017: 
+  :value: 2
+  :name: Private
+0018,0081: 
+  :value: "3.18"
+  :name: Echo Time
+0019,108D: 
+  :value: "0"
+  :name: Private
+0019,10A9: 
+  :value: "0.000000"
+  :name: Private
+0019,10D5: 
+  :value: 0
+  :name: Private
+0043,101C: 
+  :value: 0
+  :name: Private
+0019,1018: 
+  :value: I
+  :name: Private
+0018,0082: 
+  :value: "450"
+  :name: Inversion Time
+0008,0008: 
+  :value: ORIGINAL\PRIMARY\OTHER
+  :name: Image Type
+0043,101D: 
+  :value: 0
+  :name: Private
+0019,1019: 
+  :value: "-60.1565"
+  :name: Private
+0019,108F: 
+  :value: 1
+  :name: Private
+0019,10D7: 
+  :value: 0
+  :name: Private
+"0025,1014": 
+  :value: 0
+  :name: Private
+0018,0083: 
+  :value: "1"
+  :name: Number of Averages
+0018,1250: 
+  :value: 8HRBRAIN
+  :name: Receive Coil Name
+0019,10D8: 
+  :value: 0
+  :name: Private
+"0043,1001": 
+  :value: 4
+  :name: Private
+0008,0090: 
+  :value: Physician
+  :name: Referring Physician's Name
+0018,1090: 
+  :value: "0"
+  :name: Cardiac Number of Images
+0018,0084: 
+  :value: "127.755207"
+  :name: Imaging Frequency
+0019,10D9: 
+  :value: "0.000000"
+  :name: Private
+"0043,1002": 
+  :value: 3
+  :name: Private
+0018,0085: 
+  :value: 1H
+  :name: Imaged Nucleus
+0008,103E: 
+  :value: Ax FSPGR BRAVO T1
+  :name: Series Description
+"0043,1003": 
+  :value: -5
+  :name: Private
+"0025,1017": 
+  :value: 0
+  :name: Private
+0019,0010: 
+  :value: GEMS_ACQU_01
+  :name: Private
+0018,0086: 
+  :value: "1"
+  :name: Echo Number(s)
+"0020,0010": 
+  :value: "1405"
+  :name: Study ID
+"0043,1030": 
+  :value: 0
+  :name: Private
+"0043,1004": 
+  :value: -25
+  :name: Private
+0025,1018: 
+  :value: 0
+  :name: Private
+0018,0087: 
+  :value: "3"
+  :name: Magnetic Field Strength
+"0020,0011": 
+  :value: "3"
+  :name: Series Number
+"0027,1010": 
+  :value: 0
+  :name: Private
+0018,1094: 
+  :value: "0"
+  :name: Trigger Window
+0025,1019: 
+  :value: 156
+  :name: Private
+0018,0088: 
+  :value: "1"
+  :name: Spacing Between Slices
+"0020,0012": 
+  :value: "1"
+  :name: Acquisition Number
+"0043,1032": 
+  :value: 2
+  :name: Private
+"0043,1006": 
+  :value: 0
+  :name: Private
+"0020,0013": 
+  :value: "156"
+  :name: Instance Number
+0019,10AA: 
+  :value: "0.000000"
+  :name: Private
+0043,107D: 
+  :value: 0
+  :name: Private
+"0043,1033": 
+  :value: 0.0
+  :name: Private
+"0043,1007": 
+  :value: 0
+  :name: Private
+0009,0010: 
+  :value: GEMS_IDEN_01
+  :name: Private
+0019,101A: 
+  :value: S
+  :name: Private
+0019,10AB: 
+  :value: "0.000000"
+  :name: Private
+"0043,1060": 
+  :value: 0\0\0\0\0\0\0\64
+  :name: Private
+"0043,1034": 
+  :value: "0"
+  :name: Private
+0043,1008: 
+  :value: 0
+  :name: Private
+0029,1015: 
+  :value: 0
+  :name: Private
+0019,101B: 
+  :value: "94.8435"
+  :name: Private
+0019,10AC: 
+  :value: "0.000000"
+  :name: Private
+"0043,1061": 
+  :value: 1.2.840.113619.6.260.4.1294724594.737.1289407877.724
+  :name: Private
+"0043,1035": 
+  :value: 0
+  :name: Private
+0043,1009: 
+  :value: 0
+  :name: Private
+0029,1016: 
+  :value: 0
+  :name: Private
+"0027,1040": 
+  :value: S
+  :name: Private
+"0025,0010": 
+  :value: GEMS_SERS_01
+  :name: Private
+0019,10AD: 
+  :value: "0.000000"
+  :name: Private
+"0043,1062": 
+  :value: "1405"
+  :name: Private
+"0043,1036": 
+  :value: 0
+  :name: Private
+0029,1017: 
+  :value: 0
+  :name: Private
+0029,0010: 
+  :value: GEMS_IMPS_01
+  :name: Private
+"0027,1041": 
+  :value: 94.8434982299805
+  :name: Private
+0019,10AE: 
+  :value: "1.000000"
+  :name: Private
+"0043,1037": 
+  :value: 0
+  :name: Private
+0029,1018: 
+  :value: 0
+  :name: Private
+0019,101E: 
+  :value: "256.000000"
+  :name: Private
+0019,10AF: 
+  :value: "1.000000"
+  :name: Private
+"0021,1050": 
+  :value: 0
+  :name: Private
+0043,1090: 
+  :value: WHOLE_BODY_6_MIN\LOCAL_PEAK_6_MIN\PARTIAL_BODY_6MIN
+  :name: Private
+0043,1038: 
+  :value: 0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0\0.0
+  :name: Private
+"0023,1070": 
+  :value: 0.0
+  :name: Private
+"0021,1051": 
+  :value: "0.000000"
+  :name: Private
+0043,1091: 
+  :value: 0.217\0.433979\0.21699
+  :name: Private
+0043,1039: 
+  :value: 0\1073741824\0\0
+  :name: Private
+0025,101A: 
+  :value: MR01OC1
+  :name: Private
+"0020,1002": 
+  :value: "156"
+  :name: Images in Acquisition
+0019,10C0: 
+  :value: 0
+  :name: Private
+"0021,1052": 
+  :value: "0.000000"
+  :name: Private
+0025,101B: 
+  :value: 
+  :name: Private
+"0021,1053": 
+  :value: "0.000000"
+  :name: Private
+0018,1100: 
+  :value: "256"
+  :name: Reconstruction Diameter
+0019,10C2: 
+  :value: 9990
+  :name: Private
+0008,0020: 
+  :value: "20000101"
+  :name: Study Date
+0019,10DF: 
+  :value: "100.000000"
+  :name: Private
+0018,1020: 
+  :value: 21\LX\MR Software release:20.1_IB2_1020.a
+  :name: Software Version(s)
+"0010,0030": 
+  :value: "20000101"
+  :name: Patient's Birth Date
+0019,10C3: 
+  :value: 9990
+  :name: Private
+"0023,1074": 
+  :value: 0
+  :name: Private
+0008,0021: 
+  :value: "20101110"
+  :name: Series Date
+0021,1081: 
+  :value: "0"
+  :name: Private
+0043,1095: 
+  :value: TG/s1,CF/s2,AS/s2
+  :name: Private
+0043,100A: 
+  :value: 1
+  :name: Private
+0028,0100: 
+  :value: 16
+  :name: Bits Allocated
+0019,10C4: 
+  :value: 9990
+  :name: Private
+0008,0022: 
+  :value: "20101110"
+  :name: Acquisition Date
+"0021,1056": 
+  :value: 1
+  :name: Private
+0021,1082: 
+  :value: "0"
+  :name: Private
+0009,1002: 
+  :value: MR01
+  :name: Private
+0020,9056: 
+  :value: "1"
+  :name: Stack ID
+0043,1096: 
+  :value: RESEARCH
+  :name: Private
+0043,100B: 
+  :value: "0.000000"
+  :name: Private
+0028,0101: 
+  :value: 16
+  :name: Bits Stored
+"0027,0010": 
+  :value: GEMS_IMAG_01
+  :name: Private
+0019,107D: 
+  :value: "0"
+  :name: Private
+0019,10C5: 
+  :value: 9990
+  :name: Private
+0008,0023: 
+  :value: "20000101"
+  :name: Content Date
+"0021,1057": 
+  :value: 160
+  :name: Private
+0008,0050: 
+  :value: 
+  :name: Accession Number
+0021,1083: 
+  :value: "0"
+  :name: Private
+0009,1030: 
+  :value: 608WAISMR
+  :name: Private
+0020,9057: 
+  :value: 158
+  :name: In-Stack Position Number
+0043,1097: 
+  :value: \\1.5 0.2 0.2 2.0 64 0.4 1.05\1.5 0.2 0.2 2.0 64 0.4 1.05\1.5 0.2 0.2 2.0 64 0.4 1.05\100\0\0\rev=1;a=75;b=2;c=32;d=8;e=3;f=2;g=1;h=0
+  :name: Private
+0043,100C: 
+  :value: "100.000000"
+  :name: Private
+0028,0102: 
+  :value: 15
+  :name: High Bit
+0019,107E: 
+  :value: 1
+  :name: Private
+0019,10C6: 
+  :value: 9990
+  :name: Private
+0019,10F2: 
+  :value: 0
+  :name: Private
+0021,1058: 
+  :value: 0
+  :name: Private
+0021,1084: 
+  :value: "0"
+  :name: Private
+0009,1004: 
+  :value: SIGNA
+  :name: Private
+"0010,1030": 
+  :value: "79.83"
+  :name: Patient's Weight
+0028,0103: 
+  :value: 1
+  :name: Pixel Representation
+0019,107F: 
+  :value: "0.000000"
+  :name: Private
+0019,10C7: 
+  :value: 9990
+  :name: Private
+0021,1059: 
+  :value: 0
+  :name: Private
+0009,1031: 
+  :value: "9999"
+  :name: Private
+0043,100D: 
+  :value: "97.421402"
+  :name: Private
+0019,10C8: 
+  :value: 0
+  :name: Private
+0043,100E: 
+  :value: "0.000000"
+  :name: Private
+0019,10C9: 
+  :value: 0
+  :name: Private
+0008,0080: 
+  :value: Institution
+  :name: Institution Name
+0019,1090: 
+  :value: 0
+  :name: Private
+0028,0106: 
+  :value: 0
+  :name: Smallest Image Pixel Value
+0008,1010: 
+  :value: Station
+  :name: Station Name
+"0025,1006": 
+  :value: 74
+  :name: Private
+0019,1091: 
+  :value: "0.000000"
+  :name: Private
+0028,0107: 
+  :value: 4893
+  :name: Largest Image Pixel Value
+"0025,1007": 
+  :value: 156
+  :name: Private
+0019,1092: 
+  :value: 0
+  :name: Private
+0019,1093: 
+  :value: "1277552070"
+  :name: Private
+0019,10F9: 
+  :value: "128"
+  :name: Private
+0019,1094: 
+  :value: 128
+  :name: Private
+0019,1095: 
+  :value: 10
+  :name: Private
+0021,105A: 
+  :value: 0
+  :name: Private
+0043,109A: 
+  :value: "1"
+  :name: Private
+0021,105B: 
+  :value: "0.000000"
+  :name: Private
+0019,1096: 
+  :value: 29
+  :name: Private
+0043,106F: 
+  :value: 0\0\0\0
+  :name: Private
+"0027,1030": 
+  :value: 
+  :name: Private
+0008,1070: 
+  :value: Operator
+  :name: Operators' Name
+0021,105C: 
+  :value: "0.000000"
+  :name: Private
+"0020,0032": 
+  :value: -127.5\-159.375\94.8435
+  :name: Image Position (Patient)
+0018,5100: 
+  :value: HFS
+  :name: Patient Position
+0019,1097: 
+  :value: 16
+  :name: Private
+"0027,1031": 
+  :value: 9
+  :name: Private
+0021,105D: 
+  :value: "0.000000"
+  :name: Private
+0018,1088: 
+  :value: "0"
+  :name: Heart Rate
+0019,10CA: 
+  :value: 0
+  :name: Private
+0029,1034: 
+  :value: 16384
+  :name: Private
+"0027,1032": 
+  :value: 74
+  :name: Private
+"0027,1006": 
+  :value: 0
+  :name: Private
+0023,107D: 
+  :value: 0
+  :name: Private
+0021,105E: 
+  :value: "0.000000"
+  :name: Private
+"0020,0060": 
+  :value: 
+  :name: Laterality
+0019,10CB: 
+  :value: 0
+  :name: Private
+0043,1080: 
+  :value: 
+  :name: Private
+0043,1028: 
+  :value: 
+  :name: Private
+0029,1035: 
+  :value: 0
+  :name: Private
+"0027,1033": 
+  :value: 1073743872
+  :name: Private
+0021,105F: 
+  :value: "0.000000"
+  :name: Private
+0010,21B0: 
+  :value: 
+  :name: Additional Patient History
+0019,100F: 
+  :value: "244.100006"
+  :name: Private
+"0023,0010": 
+  :value: GEMS_STDY_01
+  :name: Private
+0019,10CC: 
+  :value: 0
+  :name: Private
+0043,1081: 
+  :value: C-GE_HDx 8HRBrain
+  :name: Private
+0043,1029: 
+  :value: 
+  :name: Private
+"0027,1060": 
+  :value: 256.0
+  :name: Private
+0019,10B0: 
+  :value: "0.000000"
+  :name: Private
+0019,10CD: 
+  :value: 0
+  :name: Private
+0043,1082: 
+  :value: SRMode=200\GCoilType=8\gradientAmp=8920\lineFreq=60\RFampType=15
+  :name: Private
+"0027,1061": 
+  :value: 256.0
+  :name: Private
+"0027,1035": 
+  :value: 2
+  :name: Private
+"0020,0037": 
+  :value: 1\-0\0\-0\1\0
+  :name: Image Orientation (Patient)
+0019,10B1: 
+  :value: "0.000000"
+  :name: Private
+0019,10CE: 
+  :value: 2
+  :name: Private
+0043,1083: 
+  :value: 0.546875\1
+  :name: Private
+"0027,1062": 
+  :value: 1.0
+  :name: Private
+"0010,0020": 
+  :value: ID
+  :name: Patient ID
+0019,10B2: 
+  :value: "0.000000"
+  :name: Private
+0019,10CF: 
+  :value: 0
+  :name: Private
+0043,1084: 
+  :value: 10000\11\-1\0\ \YES\ARC
+  :name: Private
+0019,10B3: 
+  :value: "0.000000"
+  :name: Private
+"0002,0010": 
+  :value: 1.2.840.10008.1.2.1
+  :name: Transfer Syntax UID
+0019,10B4: 
+  :value: "0.000000"
+  :name: Private
+0019,10E0: 
+  :value: "0.000000"
+  :name: Private
+0028,0010: 
+  :value: 256
+  :name: Rows
+0019,10B5: 
+  :value: "0.000000"
+  :name: Private
+"0002,0012": 
+  :value: 1.2.840.113619.6.260
+  :name: Implementation Class UID
+"0040,0253": 
+  :value: 
+  :name: Performed Procedure Step ID
+0028,0011: 
+  :value: 256
+  :name: Columns
+0019,10B6: 
+  :value: "0.000000"
+  :name: Private
+"0002,0013": 
+  :value: S_NUEVO_20091020
+  :name: Implementation Version Name
+0019,10E2: 
+  :value: "0.000000"
+  :name: Private
+"0040,0254": 
+  :value: RMRMABRAVOTEST
+  :name: Performed Procedure Step Description
+0019,109B: 
+  :value: 1
+  :name: Private
+0018,1310: 
+  :value: 256\0\0\256
+  :name: Acquisition Matrix
+0019,10B7: 
+  :value: "0.000000"
+  :name: Private
+"0021,0010": 
+  :value: GEMS_RELA_01
+  :name: Private
+0043,1089: 
+  :value: FDA\IEC_FIRST_LEVEL\IEC_FIRST_LEVEL
+  :name: Private
+0043,102A: 
+  :value: 
+  :name: Private
+"0043,0010": 
+  :value: GEMS_PARM_01
+  :name: Private
+0019,109C: 
+  :value: BRAVO
+  :name: Private
+0019,10B8: 
+  :value: "0.000000"
+  :name: Private
+0008,0016: 
+  :value: 1.2.840.10008.5.1.4.1.1.4
+  :name: SOP Class UID
+0018,0091: 
+  :value: "1"
+  :name: Echo Train Length
+0019,109D: 
+  :value: "20100513042549"
+  :name: Private
+0018,1312: 
+  :value: COL
+  :name: In-plane Phase Encoding Direction
+0019,10B9: 
+  :value: "0.000000"
+  :name: Private
+"0002,0016": 
+  :value: RUBY_DICOM
+  :name: Source Application Entity Title
+0008,0070: 
+  :value: GE MEDICAL SYSTEMS
+  :name: Manufacturer
+0043,102C: 
+  :value: 0
+  :name: Private
+0019,1081: 
+  :value: 0
+  :name: Private
+0019,109E: 
+  :value: EFGRE3D
+  :name: Private
+0008,0018: 
+  :value: 1.2.840.113619.2.260.6945.1176948.29385.1288985252.77
+  :name: SOP Instance UID
+0043,102D: 
+  :value: 
+  :name: Private
+0018,0093: 
+  :value: "100"
+  :name: Percent Sampling
+0020,000D: 
+  :value: 1.2.840.113619.6.260.4.1294724594.737.1289407877.724
+  :name: Study Instance UID
+0009,10E3: 
+  :value: 1.2.840.113619.1.260.5.6945.1176948
+  :name: Private
+0019,109F: 
+  :value: -32752
+  :name: Private
+0018,1314: 
+  :value: "12"
+  :name: Flip Angle

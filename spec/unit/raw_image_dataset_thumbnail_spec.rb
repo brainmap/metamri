@@ -103,4 +103,8 @@ describe "Create a thumbnail png for display." do
     File.compare(@valid_thumbnail_slicer, t.path).should be true
   end
   
+  after(:each) do
+    File.delete('test.png') if File.exist? 'test.png'
+  end
+  
 end

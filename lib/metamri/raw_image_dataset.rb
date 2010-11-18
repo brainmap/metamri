@@ -3,11 +3,10 @@ require 'sqlite3'
 require 'ftools'
 require 'metamri/nifti_builder'
 
-=begin rdoc
-A #Dataset defines a single 3D or 4D image, i.e. either a volume or a time series
-of volumes.  This encapsulation will provide easy manipulation of groups of raw
-image files including basic reconstruction.
-=end
+
+# A #RawImageDataset defines a single 3D or 4D image, i.e. either a volume or a time series
+# of volumes.  This encapsulation will provide easy manipulation of groups of raw
+# image files including basic reconstruction.
 class RawImageDataset
 
   # The directory that contains all the raw images and related files that make up
@@ -31,16 +30,26 @@ class RawImageDataset
   attr_reader :scanner_source
   # A #RawImageDatasetThumbnail object that composes the thumbnail for the dataset.
   attr_reader :thumbnail
-
-=begin rdoc
-  * dir: The directory containing the files.
-  * files: An array of #RawImageFile objects that compose the complete data set.
+  # A Description of the Study as listed in the DICOM Header
+  attr_reader :study_description
+  # A Description of the Protocol as listed in the DICOM Header
+  attr_reader :protocol_name
+  # Scan Tech Initials
+  attr_reader :operator_name
+  # Patient "Name", usually StudyID or ENUM
+  attr_reader :patient_name
+  # DICOM Series UID
+  attr_reader :dicom_series_uid
+  # DICOM Study UID
+  attr_reader :dicom_study_uid
   
-  Initialization raises errors in several cases:
-  * directory doesn't exist => IOError
-  * any of the raw image files is not actually a RawImageFile => IndexError
-  * series description, rmr number, or timestamp cannot be extracted from the first RawImageFile => IndexError
-=end
+  # * dir: The directory containing the files.
+  # * files: An array of #RawImageFile objects that compose the complete data set.
+  # 
+  # Initialization raises errors in several cases:
+  # * directory doesn't exist => IOError
+  # * any of the raw image files is not actually a RawImageFile => IndexError
+  # * series description, rmr number, or timestamp cannot be extracted from the first RawImageFile => IndexError
   def initialize(directory, raw_image_files)    
     @directory = File.expand_path(directory)
     raise(IOError, "#{@directory} not found.") if not File.directory?(@directory)
@@ -55,7 +64,7 @@ class RawImageDataset
     @raw_image_files = raw_image_files
     
     @series_description = @raw_image_files.first.series_description
-    raise(IndexError, "No series description found") if @series_description.nil?
+    validates_metainfo_for :series_description, :msg => "No series description found"
     
     @rmr_number = @raw_image_files.first.rmr_number
     raise(IndexError, "No rmr found") if @rmr_number.nil?
@@ -74,15 +83,34 @@ class RawImageDataset
     @study_id = @raw_image_files.first.study_id.nil? ? nil : @raw_image_files.first.study_id
     # raise(IndexError, "No study id / exam number found") if @study_id.nil?
     
+    @study_description = @raw_image_files.first.study_description
+    validates_metainfo_for :study_description, :msg => "No study description found" if dicom?
+    
+    @protocol_name = @raw_image_files.first.protocol_name
+    validates_metainfo_for :protocol_name, :msg => "No protocol name found" if dicom?
+    
+    @operator_name = @raw_image_files.first.operator_name
+    validates_metainfo_for :operator_name if dicom?
+    
+    @patient_name = @raw_image_files.first.patient_name
+    validates_metainfo_for :patient_name if dicom?
+    
+    @dicom_series_uid = @raw_image_files.first.dicom_series_uid
+    validates_metainfo_for :dicom_series_uid if dicom?
+    
+    @dicom_study_uid = @raw_image_files.first.dicom_study_uid
+    validates_metainfo_for :dicom_study_uid if dicom?        
+        
     $LOG ||= Logger.new(STDOUT)
   end
+  
 
-=begin rdoc
-Generates an SQL insert statement for this dataset that can be used to populate
-the Johnson Lab rails TransferScans application database backend.  The motivation
-for this is that many dataset inserts can be collected into one db transaction
-at the visit level, or even higher when doing a whole file system scan.
-=end
+
+  # Generates an SQL insert statement for this dataset that can be used to
+  # populate the Johnson Lab rails TransferScans application database backend. The
+  # motivation for this is that many dataset inserts can be collected into one db
+  # transaction at the visit level, or even higher when doing a whole file system
+  # scan.
   def db_insert(visit_id)
     "INSERT INTO image_datasets
     (rmr, series_description, path, timestamp, created_at, updated_at, visit_id, 
@@ -191,15 +219,15 @@ Returns a path to the created dataset as a string if successful.
     return nifti_conversion_command, nifti_output_file
   end
 
-=begin rdoc
-Returns a globbing wildcard that is used by to3D to gather files for
-reconstruction.  If no compatible glob is found for the data set, nil is returned.
-This is always the case for pfiles. For example if the first file in a data set is I.001, then:
-<tt>dataset.glob</tt>
-<tt>=> "I.*"</tt>
-including the quotes, which are necessary becuase some data sets (functional dicoms)
-have more component files than shell commands can handle.
-=end
+
+  # Returns a globbing wildcard that is used by to3D to gather files for
+  # reconstruction. If no compatible glob is found for the data set, nil is
+  # returned. This is always the case for pfiles. For example if the first file in
+  # a data set is I.001, then:
+  # <tt>dataset.glob</tt>
+  # <tt>=> "I.*"</tt>
+  # including the quotes, which are necessary becuase some data sets (functional dicoms)
+  # have more component files than shell commands can handle.
   def glob
     case @raw_image_files.first.filename
     when /^E.*dcm$/
@@ -273,10 +301,16 @@ have more component files than shell commands can handle.
     return relative_dataset_path
   end
   
-  # Reports series details, including description and possilby image quality
-  # check comments.  
+  # Reports series details, including description and possibly image quality
+  # check comments for #RawImageDatasetResource objects.  
   def series_details
     @series_description
+  end
+  
+  # Helper predicate method to check whether the dataset is a DICOM dataset or not.
+  # This just sends dicom? to the first raw file in the dataset.
+  def dicom?
+    @raw_image_files.first.dicom?
   end
   
 private
@@ -290,6 +324,16 @@ private
   def directory_basename
     File.basename(@directory)
   end
+
+  # Ensure that metadata is present in instance variables.
+  # validates_metainfo_for :study_description, :msg => "No study description found" 
+  def validates_metainfo_for(info_variable, options = {})
+    raise StandardError, "#{info_variable} must be a symbol" unless info_variable.kind_of? Symbol
+    if self.instance_variable_get("@" + info_variable.to_s).nil?
+      raise IndexError, options[:msg] ||= "Couldn't find #{info_variable.to_s}"
+    end
+  end
+
 
 end
 #### END OF CLASS ####
