@@ -42,14 +42,18 @@ def run!
   
   # Default to scanning the current directory if no argument was given,
   # otherwise go through each list.
-  unless ARGV.length == 1
-    input_directories = ARGV
+  unless ARGV.length >= 1
+    input_directories = [Dir.pwd]
   else
-    input_directories = ARGV[0]
+    input_directories = ARGV
   end
   
-  input_directories.each do |raw_directory|
-    list_visit raw_directory, options
+  unless input_directories.empty?
+    input_directories.each do |raw_directory|
+      list_visit raw_directory, options
+    end
+  else
+    raise IOError, "No input directories specified."
   end
   
 end
@@ -73,10 +77,11 @@ def list_visit(raw_directory, options = {})
   begin
     raise ScriptError, "Scaning filesystem directly..." if options[:force_scan]
     
-    visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => raw_directory}})
+    lookup_path = File.dirname(raw_directory).split(File::Separator).last == "dicoms" ?  File.join(raw_directory, '..') : raw_directory
+    visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => File.expand_path(lookup_path)}})
     
-    raise IOError.new("Could not lookup visit using path.") unless visit
-    raise IOError.new("Returned visit does not match path.") unless visit.path == raw_directory
+    raise IOError.new("Could not lookup visit using path #{lookup_path}.") unless visit
+    raise IOError.new("Returned visit's path #{visit.path} does not match path.") unless visit.path == File.expand_path(lookup_path)
   rescue ScriptError, IOError => e
     puts e unless options[:verbose] == false
     visit = VisitRawDataDirectory.new(raw_directory)
@@ -116,6 +121,10 @@ def parse_options
       options[:verbose] = true
     end
     
+    opts.on('-i', '--ignore REGEXP', Regexp, "A regular expression to ignore heavy directories.") do |regexp|
+      options[:ignore_patterns] = [regexp]
+    end
+    
     opts.on('-g', '--grep GREP', "Search series descriptions") do |grep|
       options[:grep] = grep
       options[:verbose] = false
@@ -132,5 +141,5 @@ def parse_options
 end
 
 if File.basename(__FILE__) == File.basename($PROGRAM_NAME)
-  run!
+    run!
 end

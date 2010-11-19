@@ -13,7 +13,7 @@ require 'dicom'
 # stored in image file headers so that they can be later reconstructed into nifti
 # data sets.
 # 
-# Primarily used to instantiate #RawImageDatasets
+# Primarily used to instantiate a #RawImageDataset
 class RawImageFile
   #:stopdoc:
   MIN_HDR_LENGTH = 400
