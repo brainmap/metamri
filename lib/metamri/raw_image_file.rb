@@ -101,7 +101,7 @@ class RawImageFile
     begin
       @hdr_data, @hdr_reader = read_header(absfilepath)
     rescue Exception => e
-      raise(IOError, "Header not readable for file #{@filename}. #{e}")
+      raise(IOError, "Header not readable for file #{@filename} using #{@current_hdr_reader ? @current_hdr_reader : "unknown header reader."}. #{e}")
     end
     
     # file type is based on file name but only if the header was read successfully
@@ -111,10 +111,10 @@ class RawImageFile
     # are not found
     begin
       import_hdr
-    rescue ScriptError => e
-      raise e, "Could not find required DICOM Header Meta Element: #{e}"
-    # rescue StandardError => e
-    #   raise e, "Header import failed for file #{@filename}.  #{e}"
+    rescue ScriptError, NoMethodError => e
+      raise IOError, "Could not find required DICOM Header Meta Element: #{e}"
+    rescue StandardError => e
+      raise e, "Header import failed for file #{@filename}.  #{e}"
     end
     
     # deallocate the header data to save memory space.
@@ -251,22 +251,40 @@ private
   # 
   # Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
   def read_header(absfilepath)
-    header = DICOM::DObject.new(absfilepath)
-    return [header, RUBYDICOM_HDR] if defined? header.read_success && header.read_success
-    
-    header = `#{DICOM_HDR} '#{absfilepath}' 2> /dev/null`
-    #header = `#{DICOM_HDR} #{absfilepath}`
-    if ( header.index("ERROR") == nil and 
-         header.chomp != "" and 
-         header.length > MIN_HDR_LENGTH )
-      return [ header, DICOM_HDR ]
+
+    case File.basename(absfilepath)
+    when /^P.{5}\.7$|^I\..{3}/
+      # Try reading Pfiles or Genesis I-Files with GE's rdgehdr
+      @current_hdr_reader = RDGEHDR
+      header = `#{RDGEHDR} '#{absfilepath}' 2> /dev/null`
+      #header = `#{RDGEHDR} #{absfilepath}`
+      if ( header.chomp != "" and
+           header.length > MIN_HDR_LENGTH )
+        @current_hdr_reader = nil
+        return [ header, RDGEHDR ]
+      end
+    else
+      # Try reading with RubyDICOM
+      @current_hdr_reader = RUBYDICOM_HDR
+      header = DICOM::DObject.new(absfilepath)
+      if defined? header.read_success && header.read_success
+        @current_hdr_reader = nil
+        return [header, RUBYDICOM_HDR] 
+      end
+      
+      # Try reading with AFNI's dicom_hdr
+      @current_hdr_reader = DICOM_HDR
+      header = `#{DICOM_HDR} '#{absfilepath}' 2> /dev/null`
+      #header = `#{DICOM_HDR} #{absfilepath}`
+      if ( header.index("ERROR") == nil and 
+           header.chomp != "" and 
+           header.length > MIN_HDR_LENGTH )
+        @current_hdr_reader = nil
+        return [ header, DICOM_HDR ]
+      end
     end
-    header = `#{RDGEHDR} '#{absfilepath}' 2> /dev/null`
-    #header = `#{RDGEHDR} #{absfilepath}`
-    if ( header.chomp != "" and
-         header.length > MIN_HDR_LENGTH )
-      return [ header, RDGEHDR ]
-    end
+
+    @current_hdr_reader = nil
     return [ nil, nil ]
   end
 
@@ -345,7 +363,7 @@ private
   #   0028,0030 Pixel Spacing                        DS     14 0.9375\0.9375
   def rubydicom_hdr_import
     dicom_tag_attributes = {
-      :source => "0008,1010",
+      :source => "0008,0080",
       :series_description => "0008,103E",
       :study_description => "0008,1030",
       :operator_name => "0008,1070",

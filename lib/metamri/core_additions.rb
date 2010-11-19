@@ -38,14 +38,14 @@ class Pathname
   
   def each_pfile(min_file_size = MIN_PFILE_SIZE)
     entries.each do |leaf|
-      next unless leaf.to_s =~ /^P.*\.7|^P.*\.7\.bz2/
+      next unless leaf.to_s =~ /^P.{5}\.7(\.bz2)/
       branch = self + leaf
       next if branch.symlink?
       if branch.size >= min_file_size
         lc = branch.local_copy
         begin
           yield lc
-        rescue Exception => e
+        rescue StandardError => e
           puts "#{e}"
         ensure
           lc.delete
@@ -57,7 +57,7 @@ class Pathname
   def first_dicom
     entries.each do |leaf|
       branch = self + leaf
-      if leaf.to_s =~ /^I\.|\.dcm(\.bz2)?$|\.[0-9]+(\.bz2)?$/
+      if leaf.to_s =~ /^I\.(\.bz2)?$|\.dcm(\.bz2)?$|[A-Za-z^P]\.[0-9]+(\.bz2)?$/
         lc = branch.local_copy
         begin
           yield lc
@@ -113,12 +113,11 @@ class Pathname
     self.to_s =~ /^\./ || self.symlink?
   end
   
-=begin
-  Creates a local, unzipped copy of a file for use in scanning.
-  Will return a pathname to the local copy if called directly, or can also be 
-  passed a block.  If it is passed a block, it will create the local copy
-  and ensure the local copy is deleted.
-=end
+
+  # Creates a local, unzipped copy of a file for use in scanning.
+  # Will return a pathname to the local copy if called directly, or can also be 
+  # passed a block.  If it is passed a block, it will create the local copy
+  # and ensure the local copy is deleted.
   def local_copy(tempdir = Dir.mktmpdir, &block)
     tfbase = self.to_s =~ /\.bz2$/ ? self.basename.to_s.chomp(".bz2") : self.basename.to_s
     tfbase.escape_filename

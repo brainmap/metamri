@@ -70,7 +70,7 @@ class RawImageDatasetResource < ActiveResource::Base
   # end
   
   def pfile?
-    scanned_file =~ /^P.*.7$/
+    scanned_file =~ /^P.{5}.7$/
   end
   
   

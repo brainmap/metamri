@@ -25,17 +25,16 @@ end
 
 
 
-=begin rdoc
-Encapsulates a directory of data acquired during one participant visit.  These
-are the raw data directories that are transfered directly from the scanners and
-archived in the raw data section of the vtrak filesystem.  After initializing, the
-visit can be scanned to extract metadata for all of the images acquired during the
-visit.  The scanning is done in a fairly naive manner: the visit directory is recursively
-walked and in each subdirectory any and all pfiles will be imported in addition to one single
-dicom if any exist.  Thus, only a single dicom file among many in a scan session is used to 
-retrieve information.  checking the individual files for data integrity must be handled
-elsewhere if at all.
-=end
+# Encapsulates a directory of data acquired during one participant visit. These
+# are the raw data directories that are transfered directly from the scanners
+# and archived in the raw data section of the vtrak filesystem. After
+# initializing, the visit can be scanned to extract metadata for all of the
+# images acquired during the visit. The scanning is done in a fairly naive
+# manner: the visit directory is recursively walked and in each subdirectory any
+# and all pfiles will be imported in addition to one single dicom if any exist.
+# Thus, only a single dicom file among many in a scan session is used to
+# retrieve information. checking the individual files for data integrity must be
+# handled elsewhere if at all.
 class VisitRawDataDirectory
   # The absolute path of the visit directory, as a string.
   attr_reader :visit_directory
@@ -96,10 +95,10 @@ class VisitRawDataDirectory
       begin
         matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
         next unless matches.empty?
-        dd.each_pfile { |pf| @datasets << import_dataset(pf, dd) }
-        dd.first_dicom { |fd| @datasets << import_dataset(fd, dd) }
-      rescue Exception => e
-        raise(IndexError, "There was an error scaning dataset #{dd}: #{e}")
+        dd.each_pfile { |pf| @datasets << import_dataset(pf, dd);  (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
+        dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
+      rescue StandardError => e
+        raise(e, "There was an error scaning dataset #{dd}: #{e}")
       end
     end
     
@@ -220,7 +219,7 @@ Returns an array of the created nifti files.
     end
     
     # Reminder Line
-    puts "(This would be much prettier if you installed hirb.)"
+    puts "(This would be much prettier if you hirb was installed (just type: gem install hirb)."
     
     return
   end
@@ -313,9 +312,8 @@ Returns an array of the created nifti files.
     "SELECT * FROM image_datasets WHERE rmr = '#{ds.rmr_number}' AND path = '#{ds.directory}' AND timestamp = '#{ds.timestamp}'"
   end
   
-=begin rdoc
-generates an sql insert statement to insert this visit with a given participant id
-=end
+
+  # generates an sql insert statement to insert this visit with a given participant id
   def sql_insert_visit(scan_procedure_id=0)
     "INSERT INTO visits 
     (date, scan_procedure_id, scan_number, initials, rmr, radiology_outcome, notes, transfer_mri, transfer_pet,
@@ -324,18 +322,27 @@ generates an sql insert statement to insert this visit with a given participant 
     ('#{@timestamp.to_s}', '#{scan_procedure_id.to_s}', '', '', '#{@rmr_number}', 'no', '', 'no', 'no', 
     'no', 'no', 'no', NULL, '#{@visit_directory}', '#{@scanner_source}', '#{DateTime.now}', '#{DateTime.now}')"
   end
-  
+
+  # Build a new RawImageDataset from a path to the rawfile and parent directory.
+  # == Args
+  #  * rawfile: String.  Path to the raw image file to scan.  This should be an unzipped PFile or DICOM, ideally on a local disk for speed.
+  #  * original_parent_directory: String or Pathname. Path of the original parent directory where the RawImageFile resides.
+  # 
+  # Raises an IOError with description if the RawImageFile could not be initialized.
+  # 
+  # Returns a RawImageDataset built from the directory and single rawfile.
   def import_dataset(rawfile, original_parent_directory)
     puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
     
     begin
       rawimagefile = RawImageFile.new(rawfile.to_s)
-    rescue Exception => e
-      raise(IOError, "+++ Trouble reading raw image file #{rawfile}. #{e}")
+    # rescue Exception => e
+    #   raise(e, "+++ Trouble reading raw image file #{rawfile}. #{e}")
     end
     
     return RawImageDataset.new(original_parent_directory.to_s, [rawimagefile])
   end
+  
   
   def convert_dataset(rawfiles, original_parent_directory, nifti_output_directory)
     puts "Converting scan session: #{original_parent_directory.to_s} using raw data file: #{rawfiles.first.basename}"
