@@ -98,6 +98,10 @@ class RawImageDatasetResource < ActiveResource::Base
     return relative_dataset_path
   end
   
+  def image_quality_checks
+    
+  end
+  
   # Creates an Hirb Table for pretty output of dataset info.
   # It takes an array of either RawImageDatasets or RawImageDatasetResources
   def self.to_table(datasets)
