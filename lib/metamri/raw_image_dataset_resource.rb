@@ -98,8 +98,30 @@ class RawImageDatasetResource < ActiveResource::Base
     return relative_dataset_path
   end
   
-  def image_quality_checks
-    
+  # Queries ActiveResource for an array of ImageDatasetQualityCheckResources 
+  def image_dataset_quality_checks
+    @image_dataset_quality_checks ||= ImageDatasetQualityCheckResource.find(:all, :params => {:image_dataset_id => id })
+  end
+  
+  def image_dataset_quality_checks_tablerow
+    output = []
+    unless image_dataset_quality_checks.empty?
+      image_dataset_quality_checks.each do |qc|
+        qc.failed_checks.each do |check|
+          output << "* #{check[:name].capitalize.gsub("_", " ")} (#{check[:value]}): #{check[:comment]}."
+        end
+
+        output << "Concerns: #{qc.other_issues}" if qc.other_issues
+
+        if output.empty? 
+          output << "Good"
+        end
+      
+        # Add QC date at end.
+        output << "[#{qc.attribute_names['created_at'].strftime('%D')}]"
+      end
+    end
+    return output.join(" ")
   end
   
   # Creates an Hirb Table for pretty output of dataset info.
@@ -107,12 +129,12 @@ class RawImageDatasetResource < ActiveResource::Base
   def self.to_table(datasets)
     Hirb::Helpers::AutoTable.render(
       datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.path)] }, 
-      :headers => { :relative_dataset_path => 'Dataset', :series_description => 'Series Details', :file_count => "File Count", }, 
-      :fields => [:relative_dataset_path, :series_description, :file_count],
+      :headers => { :relative_dataset_path => 'Dataset', :series_description => 'Series Details', :file_count => "File Count", :image_dataset_quality_checks_tablerow => "Quality Checks"}, 
+      :fields => [:relative_dataset_path, :series_description, :file_count, :image_dataset_quality_checks_tablerow],
       :description => false # Turn off rendering row count description at bottom.
     )
   rescue NameError => e
-    puts e
+    raise e
 
     # Header Line
     printf "\t%-15s %-30s [%s]\n", "Directory", "Series Description", "Files"
@@ -125,6 +147,6 @@ class RawImageDatasetResource < ActiveResource::Base
     # Reminder Line
     puts "(This would be much prettier if you installed hirb.)"
     return
-  end   
+  end
   
 end

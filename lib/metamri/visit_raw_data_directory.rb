@@ -59,7 +59,7 @@ class VisitRawDataDirectory
   
   PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits'
   # DATAPANDA_SERVER = 'http://localhost:3000'
-  DATAPANDA_SERVER = 'http://144.92.151.228'
+  DATAPANDA_SERVER = 'http://nelson'
 
   
   # A new Visit instance needs to know the path to its raw data and scan_procedure name.  The scan_procedure
@@ -95,7 +95,7 @@ class VisitRawDataDirectory
       begin
         matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
         next unless matches.empty?
-        dd.each_pfile { |pf| @datasets << import_dataset(pf, dd);  (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
+        dd.each_pfile  { |pf| @datasets << import_dataset(pf, dd); (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
       rescue StandardError => e
         raise(e, "There was an error scaning dataset #{dd}: #{e}")

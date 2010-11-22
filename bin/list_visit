@@ -36,6 +36,7 @@ $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 require 'pathname'
 require 'logger'
 require 'metamri'
+require 'optparse'
 
 def run!
   options = parse_options
@@ -82,7 +83,7 @@ def list_visit(raw_directory, options = {})
     
     raise IOError.new("Could not lookup visit using path #{lookup_path}.") unless visit
     raise IOError.new("Returned visit's path #{visit.path} does not match path.") unless visit.path == File.expand_path(lookup_path)
-  rescue ScriptError, IOError => e
+  rescue ActiveResource::ConnectionError, ScriptError, IOError => e
     puts e unless options[:verbose] == false
     visit = VisitRawDataDirectory.new(raw_directory)
     begin

@@ -22,5 +22,25 @@ class ImageDatasetQualityCheckResource < ActiveResource::Base
   self.site = VisitRawDataDirectory::DATAPANDA_SERVER
   self.element_name = "image_dataset_quality_check"
   
+  PASSING_STATUSES = Set.new(%w(complete pass))
+  FAILING_STATUSES = Set.new( ["Incomplete","Mild","Moderate","Severe","Limited Activation","No activation","No pass"] )
   
+  # Returns an array of hashes for failed checks.
+  def failed_checks
+    failed_checks = Array.new
+    self.attribute_names.each_pair do |name, value|
+      unless name.blank?
+        if FAILING_STATUSES.include?(value)
+          comment = instance_values['attributes']["#{name}_comment"]
+          failed_checks << {:name => name, :value => value, :comment => comment }
+        end
+      end
+    end
+    return failed_checks
+  end
+  
+  def attribute_names
+    instance_values['attributes']
+  end
+    
 end

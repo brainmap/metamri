@@ -57,7 +57,7 @@ class Pathname
   def first_dicom
     entries.each do |leaf|
       branch = self + leaf
-      if leaf.to_s =~ /^I\.(\.bz2)?$|\.dcm(\.bz2)?$|[A-Za-z^P]\.[0-9]+(\.bz2)?$/
+      if leaf.to_s =~ /^I\..*(\.bz2)?$|\.dcm(\.bz2)?$|\.[0-9]{2,}(\.bz2)?$/
         lc = branch.local_copy
         begin
           yield lc

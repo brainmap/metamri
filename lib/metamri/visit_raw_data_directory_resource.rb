@@ -39,6 +39,7 @@ class VisitRawDataDirectoryResource < ActiveResource::Base
     # puts "#{@scan_procedure_name}"
     puts RawImageDatasetResource.to_table(datasets)
     puts "Notes: " + notes unless notes.nil? or notes.empty?
+    puts "#{VisitRawDataDirectory::DATAPANDA_SERVER}/visits/#{id}"
   end
   
 end
