@@ -95,8 +95,8 @@ class VisitRawDataDirectory
       begin
         matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
         next unless matches.empty?
-        dd.each_pfile  { |pf| @datasets << import_dataset(pf, dd); (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
-        dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); (print "."; STDOUT.flush) if $LOG.level == Logger::INFO }
+        dd.each_pfile  { |pf| @datasets << import_dataset(pf, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
+        dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
       rescue StandardError => e
         raise(e, "There was an error scaning dataset #{dd}: #{e}")
       end

@@ -108,7 +108,7 @@ class RawImageDatasetResource < ActiveResource::Base
     unless image_dataset_quality_checks.empty?
       image_dataset_quality_checks.each do |qc|
         qc.failed_checks.each do |check|
-          output << "* #{check[:name].capitalize.gsub("_", " ")} (#{check[:value]}): #{check[:comment]}."
+          output << "* #{check[:name].capitalize.gsub("_", " ") } (#{check[:value]}): #{(check[:comment] + ".") if check[:comment]}"
         end
 
         output << "Concerns: #{qc.other_issues}" if qc.other_issues
@@ -131,7 +131,8 @@ class RawImageDatasetResource < ActiveResource::Base
       datasets.sort_by{ |ds| [ds.timestamp, File.basename(ds.path)] }, 
       :headers => { :relative_dataset_path => 'Dataset', :series_description => 'Series Details', :file_count => "File Count", :image_dataset_quality_checks_tablerow => "Quality Checks"}, 
       :fields => [:relative_dataset_path, :series_description, :file_count, :image_dataset_quality_checks_tablerow],
-      :description => false # Turn off rendering row count description at bottom.
+      :description => false, # Turn off rendering row count description at bottom.
+      :resize => false
     )
   rescue NameError => e
     raise e

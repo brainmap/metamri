@@ -42,6 +42,8 @@ class RawImageDataset
   attr_reader :dicom_series_uid
   # DICOM Study UID
   attr_reader :dicom_study_uid
+  # Array of Read Error Strings
+  attr_reader :read_errors
   
   # * dir: The directory containing the files.
   # * files: An array of #RawImageFile objects that compose the complete data set.
@@ -51,6 +53,7 @@ class RawImageDataset
   # * any of the raw image files is not actually a RawImageFile => IndexError
   # * series description, rmr number, or timestamp cannot be extracted from the first RawImageFile => IndexError
   def initialize(directory, raw_image_files)    
+    @read_errors = Array.new
     @directory = File.expand_path(directory)
     raise(IOError, "#{@directory} not found.") if not File.directory?(@directory)
     raise(IOError, "No raw image files supplied.") unless raw_image_files
@@ -90,7 +93,7 @@ class RawImageDataset
     validates_metainfo_for :protocol_name, :msg => "No protocol name found" if dicom?
     
     @operator_name = @raw_image_files.first.operator_name
-    validates_metainfo_for :operator_name if dicom?
+    validates_metainfo_for :operator_name, :optional => true if dicom?
     
     @patient_name = @raw_image_files.first.patient_name
     validates_metainfo_for :patient_name if dicom?
@@ -102,6 +105,15 @@ class RawImageDataset
     validates_metainfo_for :dicom_study_uid if dicom?        
         
     $LOG ||= Logger.new(STDOUT)
+  end
+  
+  # Prints a "success" dot or error mesage if any errors in @read_errors.
+  def print_scan_status
+    if @read_errors.empty?
+      print "."; STDOUT.flush
+    else
+      puts @read_errors.join("; ")
+    end
   end
   
 
@@ -330,7 +342,8 @@ private
   def validates_metainfo_for(info_variable, options = {})
     raise StandardError, "#{info_variable} must be a symbol" unless info_variable.kind_of? Symbol
     if self.instance_variable_get("@" + info_variable.to_s).nil?
-      raise IndexError, options[:msg] ||= "Couldn't find #{info_variable.to_s}"
+      @read_errors << options[:msg] ||= "Couldn't find #{info_variable.to_s}"
+      raise IndexError, message unless options[:optional]
     end
   end
 
