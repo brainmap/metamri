@@ -132,7 +132,7 @@ class RawImageDatasetResource < ActiveResource::Base
       :headers => { :relative_dataset_path => 'Dataset', :series_description => 'Series Details', :file_count => "File Count", :image_dataset_quality_checks_tablerow => "Quality Checks"}, 
       :fields => [:relative_dataset_path, :series_description, :file_count, :image_dataset_quality_checks_tablerow],
       :description => false, # Turn off rendering row count description at bottom.
-      :resize => false
+      :resize => true
     )
   rescue NameError => e
     raise e
