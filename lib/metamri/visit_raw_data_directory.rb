@@ -88,7 +88,9 @@ class VisitRawDataDirectory
     flash "Scanning visit raw data directory #{@visit_directory}" if $LOG.level <= Logger::INFO
     default_options = {:ignore_patterns => []}
     options = default_options.merge(options)
-    puts "Ignoring directories matching: #{options[:ignore_patterns].join(", ")}" unless options[:ignore_patterns].empty?
+    unless options[:ignore_patterns].empty?
+      puts "Ignoring directories matching: #{options[:ignore_patterns].join(", ")}" if $LOG.level <= Logger::INFO
+    end
     
     d = Pathname.new(@visit_directory)
     d.each_subdirectory do |dd|
