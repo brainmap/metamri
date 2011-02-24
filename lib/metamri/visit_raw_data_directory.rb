@@ -56,6 +56,8 @@ class VisitRawDataDirectory
   attr_accessor :scanid
   # The id of the visit to be used when doing reverse-lookup in data panda.
   attr_accessor :database_id
+  # DICOM Study UID (Visit/Study Unique Identifier)
+  attr_reader :dicom_study_uid
   
   PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits'
   # DATAPANDA_SERVER = 'http://localhost:3000'
@@ -109,6 +111,7 @@ class VisitRawDataDirectory
       @rmr_number = get_rmr_number
       @scanner_source = get_scanner_source
       @study_id = get_study_id
+      @dicom_study_uid = get_dicom_study_uid
       flash "Completed scanning #{@visit_directory}" if $LOG.level <= Logger::DEBUG
     else
       raise(IndexError, "No datasets could be scanned for directory #{@visit_directory}")
@@ -122,7 +125,8 @@ class VisitRawDataDirectory
       :rmr => @rmr_number, 
       :path => @visit_directory, 
       :scanner_source => @scanner_source ||= get_scanner_source,
-      :scan_number => @study_id
+      :scan_number => @study_id,
+      :dicom_study_uid => @dicom_study_uid
     }
   end
   
@@ -393,6 +397,14 @@ Returns an array of the created nifti files.
       return ds.study_id unless ds.study_id.nil?
     end
     # raise(IOError, "No valid study id / exam number found.")
+  end
+  
+  # retrieves exam number / scan id from first #RawImageDataset
+  def get_dicom_study_uid
+    @datasets.each do |ds|
+      return ds.dicom_study_uid unless ds.dicom_study_uid.nil?
+    end
+    raise(IOError, "No valid study uid found from DICOMS.")
   end
   
   def get_scan_procedure_based_on_raw_directory

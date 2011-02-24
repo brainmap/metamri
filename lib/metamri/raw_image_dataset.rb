@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'sqlite3'
-require 'ftools'
+require 'fileutils'
 require 'metamri/nifti_builder'
 
 
@@ -42,8 +42,11 @@ class RawImageDataset
   attr_reader :dicom_series_uid
   # DICOM Study UID
   attr_reader :dicom_study_uid
+  # Tag Hash of DICOM Keys
+  attr_reader :dicom_taghash
   # Array of Read Error Strings
   attr_reader :read_errors
+
   
   # * dir: The directory containing the files.
   # * files: An array of #RawImageFile objects that compose the complete data set.
@@ -102,7 +105,10 @@ class RawImageDataset
     validates_metainfo_for :dicom_series_uid if dicom?
     
     @dicom_study_uid = @raw_image_files.first.dicom_study_uid
-    validates_metainfo_for :dicom_study_uid if dicom?        
+    validates_metainfo_for :dicom_study_uid if dicom?
+    
+    @dicom_taghash = @raw_image_files.first.dicom_taghash
+    validates_metainfo_for :dicom_taghash if dicom?
         
     $LOG ||= Logger.new(STDOUT)
   end
@@ -154,15 +160,14 @@ class RawImageDataset
      AND timestamp LIKE '#{@timestamp.to_s.split(/\+|Z/).first}%'"
   end
 
-=begin rdoc
-Returns a hash of attributes used for insertion into active record.
-Options:  :thumb => FileHandle to thumbnail includes a thumbnail.
-=end  
+
+  # Returns a hash of attributes used for insertion into active record.
+  # Options:  :thumb => FileHandle to thumbnail includes a thumbnail.
   def attributes_for_active_record(options = {})
     thumbnail = options.has_key?(:thumb) ? options[:thumb] : nil
     
     unless (thumbnail.class == File || thumbnail == nil)
-      raise(IOError, "Thumbnail #{options[:thumb]} must be a #File.")
+      raise(IOError, "Thumbnail #{options[:thumb]} must be a #File instead of #{thumbnail.class}.")
     end
     { :rmr => @rmr_number,
       :series_description => @series_description,
@@ -173,7 +178,9 @@ Options:  :thumb => FileHandle to thumbnail includes a thumbnail.
       :bold_reps => @raw_image_files.first.bold_reps,
       :slices_per_volume => @raw_image_files.first.num_slices,
       :scanned_file => @scanned_file,
-      :thumbnail => thumbnail
+      :thumbnail => thumbnail,
+      :dicom_series_uid => @dicom_series_uid,
+      :dicom_taghash => @dicom_taghash
     }
   end
   
