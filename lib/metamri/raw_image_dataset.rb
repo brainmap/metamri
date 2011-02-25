@@ -345,11 +345,29 @@ private
   end
 
   # Ensure that metadata is present in instance variables.
-  # validates_metainfo_for :study_description, :msg => "No study description found" 
+  #
+  # Raises an IndexError if supplied instance variable is nil unless :optional,
+  # and adds a message to the @read_errors array.
+  #
+  # === Parameters
+  #
+  # * <tt>info_variable</tt> -- A string (not including the @ sign) to check to ensure not blank and not empty.
+  #
+  # === Options
+  #
+  # * <tt>:msg</tt> -- An optional message to be added to @read_errors (defaults to "Couldn't find <info_variable>")
+  # * <tt>:optional</tt> -- A boolean to allow adding the error to the array as a warning but not breaking with an error.
+  #  
+  # === Examples
+  #
+  # validates_metainfo_for :study_description, :msg => "No study description found", :optional => true
+  # 
   def validates_metainfo_for(info_variable, options = {})
     raise StandardError, "#{info_variable} must be a symbol" unless info_variable.kind_of? Symbol
-    if self.instance_variable_get("@" + info_variable.to_s).nil?
-      @read_errors << options[:msg] ||= "Couldn't find #{info_variable.to_s}"
+    data = self.instance_variable_get("@" + info_variable.to_s)
+    if data.nil? || data.empty?
+      message = options[:msg] || "Couldn't find #{info_variable.to_s}"
+      @read_errors << message
       raise IndexError, message unless options[:optional]
     end
   end
