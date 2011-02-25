@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{metamri}
-  s.version = "0.2.2"
+  s.version = "0.2.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2011-01-18}
+  s.date = %q{2011-02-25}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
   s.executables = ["convert_visit.rb", "import_visit.rb", "import_respiratory_files.rb", "import_study.rb", "list_visit"]
@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
     "README.rdoc"
   ]
   s.files = [
+    ".rspec",
     "Manifest",
     "README.rdoc",
     "Rakefile",
@@ -28,6 +29,7 @@ Gem::Specification.new do |s|
     "bin/list_visit",
     "lib/metamri.rb",
     "lib/metamri/core_additions.rb",
+    "lib/metamri/dicom_additions.rb",
     "lib/metamri/image_dataset_quality_check_resource.rb",
     "lib/metamri/mysql_tools.rb",
     "lib/metamri/nifti_builder.rb",
@@ -40,6 +42,7 @@ Gem::Specification.new do |s|
     "lib/metamri/visit_raw_data_directory_resource.rb",
     "metamri.gemspec",
     "spec/helper_spec.rb",
+    "spec/unit/dicom_additions_spec.rb",
     "spec/unit/nifti_builder_spec.rb",
     "spec/unit/raw_image_dataset_spec.rb",
     "spec/unit/raw_image_dataset_thumbnail_spec.rb",
@@ -57,10 +60,11 @@ Gem::Specification.new do |s|
   ]
   s.homepage = %q{http://github.com/brainmap/metamri}
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.4.1}
+  s.rubygems_version = %q{1.4.2}
   s.summary = %q{MRI metadata}
   s.test_files = [
     "spec/helper_spec.rb",
+    "spec/unit/dicom_additions_spec.rb",
     "spec/unit/nifti_builder_spec.rb",
     "spec/unit/raw_image_dataset_spec.rb",
     "spec/unit/raw_image_dataset_thumbnail_spec.rb",
