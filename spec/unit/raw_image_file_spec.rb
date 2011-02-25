@@ -35,7 +35,7 @@ describe RawImageFile, "reads a dicom header and extracts metadata" do
       image.series_description.should == "Ax FSPGR BRAVO T1"
       image.slice_spacing.should == "1"
       image.slice_thickness.should == "1"
-      image.source.should == "Station"
+      image.source.should == "Institution"
       # Don't compare floats due to rounding errors, but compare all the other tags in dicom_taghash
       image.dicom_taghash.reject{|k,v| v[:value].kind_of? Float }.should == valid_dicom_taghash.reject{|k,v| v[:value].kind_of? Float }
       image.dicom_study_uid.should == "1.2.840.113619.6.260.4.1294724594.737.1289407877.724"

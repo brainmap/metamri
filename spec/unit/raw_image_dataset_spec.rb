@@ -20,7 +20,7 @@ describe RawImageDataset, "for a single valid DICOM file" do
     ds.raw_image_files.first.should == @valid_raw_image_file
     ds.rmr_number.should == "ID"
     ds.scanned_file.should == @valid_dicom_basename
-    ds.scanner_source.should == "Station"
+    ds.scanner_source.should == "Institution"
     ds.series_description.should == "Ax FSPGR BRAVO T1"
     ds.study_id.should == "1405"
     ds.timestamp.should == DateTime.parse("Wed, 10 Nov 2010 00:00:00 +0000")

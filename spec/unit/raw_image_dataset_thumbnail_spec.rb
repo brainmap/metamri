@@ -1,7 +1,7 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','..','lib')
 $:.unshift File.join(File.dirname(__FILE__))
 
-require 'spec'
+
 require 'escoffier'
 require 'metamri/core_additions'
 require 'metamri/raw_image_dataset'

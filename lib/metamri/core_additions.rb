@@ -74,8 +74,7 @@ class Pathname
   def all_dicoms
     local_copies = []
     Dir.mktmpdir do |tempdir|
-      begin
-      
+      # begin
         entries.each do |leaf|
           branch = self + leaf
           if leaf.to_s =~ /^I\.(\.bz2)?$|\.dcm(\.bz2)?$|\.[0-9]+(\.bz2)?$/
@@ -85,9 +84,10 @@ class Pathname
 
         yield local_copies
 
-      ensure
-        local_copies.each { |lc| lc.delete }
-      end
+      # ensure
+        # No ensure needed since Dir.mktmpdir will implode after a block.
+        # local_copies.each { |lc| lc.delete if lc.exist? }
+      # end
     end
     
     return
@@ -147,6 +147,62 @@ class Pathname
   
 end
 
+# Find hash differences.
+class Hash
+  def diff(other)
+    self.keys.inject({}) do |memo, key|
+      unless self[key] == other[key]
+        memo[key] = [self[key], other[key]] 
+      end
+      memo
+    end
+  end
+  
+  def similar(other)
+    self.keys.inject({}) do |memo, key|
+      if self[key] == other[key]
+        memo[key] = self[key]
+      end
+      memo
+    end
+  end
+end
+
+# Method from ftools - requiring fileutils instead for Ruby 1.9 compatibility
+# and explicitly adding this single method.
+class File
+  BUFSIZE = 8 * 1024
+  def self.compare(from, to, verbose = false)
+    $stderr.print from, " <=> ", to, "\n" if verbose
+
+    return false if stat(from).size != stat(to).size
+
+    from = open(from, "rb")
+    to = open(to, "rb")
+
+    ret = false
+    fr = tr = ''
+
+    begin
+      while fr == tr
+        fr = from.read(BUFSIZE)
+        if fr
+          tr = to.read(fr.size)
+        else
+          ret = to.read(BUFSIZE)
+          ret = !ret || ret.length == 0
+          break
+        end
+      end
+    rescue
+      ret = false
+    ensure
+      to.close
+      from.close
+    end
+    ret
+  end
+end
 # =begin rdoc
 # Monkey-patch Float to avoid rounding errors.
 # For more in-depth discussion, see: http://www.ruby-forum.com/topic/179361

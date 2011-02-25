@@ -1,9 +1,8 @@
 $:.unshift File.join(File.dirname(__FILE__),'..','lib')
 
+require 'helper_spec'
+
 require 'rubygems'
-require 'spec'
-require 'fileutils'
-require 'tmpdir'
 require 'metamri'
 
 VISIT_FIXTURE_SRC = '/Data/vtrak1/raw/johnson.tbi-va.visit1/tbiva034_10019_04212010'
@@ -48,8 +47,8 @@ describe "Convert Unknown Dicoms to Nifti Files" do
     @dataset_unzipped.to_nifti('/tmp/', 'filename.nii', :input_directory => @dataset_unzipped.directory)[0].should == "to3d -session /tmp/ -prefix filename.nii #{@dataset_unzipped.directory}/'*.dcm'"
     nifti_conversion_command, nifti_output_file = @dataset_unzipped.to_nifti!('/tmp/', 'filename.nii', :input_directory => @dataset_unzipped.directory)
     nifti_conversion_command.should == "to3d -session /tmp/ -prefix filename.nii #{@dataset_unzipped.directory}/'*.dcm'"
+    File.exist?(nifti_output_file).should be_true
     @test_niftis << nifti_output_file
-    @output_directories << '/tmp'
   end
   
   it "should convert all anatomicals in a visit raw directory using original, unzipped files." do
@@ -106,7 +105,7 @@ describe "Convert Unknown Dicoms to Nifti Files" do
   end
   
   after(:each) do
-    @test_niftis.flatten.each { |nifti| File.delete(nifti) } unless @test_niftis.empty?
+    @test_niftis.flatten.each { |nifti| File.delete(nifti) if File.exist?(nifti) } unless @test_niftis.empty?
     [@output_directories, Dir.tmpdir, '/tmp'].flatten.each do |temp_dir|
       Dir.foreach(temp_dir) {|f| File.delete(File.join(temp_dir, f)) if File.extname(f) == '.nii'}
     end
