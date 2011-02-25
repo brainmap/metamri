@@ -143,6 +143,10 @@ class RawImageFile
     return @file_type == "dicom"
   end
   
+  def geifile?
+    return @file_type == "geifile"
+  end
+  
   
   # Returns a yaml string based on a subset of the attributes.  Specifically,
   # the @hdr_data is not included.  This is used to generate .yaml files that are 
@@ -294,8 +298,9 @@ private
   # file a "pfile" if it is an image and the file name is of the form P*.7
   # All other images are called "dicom".
   def determine_file_type
-    return "pfile" if image? and (@filename =~ /^P.....\.7/) != nil
-    return "dicom" if image? and (@filename =~ /^P.....\.7/) == nil
+    return "pfile"    if image? and (@filename =~ /^P.....\.7/) != nil
+    return "geifile"  if image? and (@filename =~ /^I\.\d*/) != nil
+    return "dicom"    if image? and (@filename =~ /^P.....\.7/) == nil
     return nil
   end
 
