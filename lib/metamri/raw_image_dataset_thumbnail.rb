@@ -19,6 +19,8 @@ class RawImageDatasetThumbnail
   attr_reader :path
   # The processor for creating the thumbnail (:rubydicom or :slicer)
   attr_reader :processor
+  # An array of errors encountered during the reading process.
+  attr_reader :errors
 
   # Creates a RawImageDatasetThumbnail instance by passing in a parent dataset to thumbnail.
   def initialize(dataset)

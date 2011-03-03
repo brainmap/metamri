@@ -51,7 +51,12 @@ def run!
   
   unless input_directories.empty?
     input_directories.each do |raw_directory|
-      list_visit raw_directory, options
+      begin
+        list_visit raw_directory, options
+      rescue StandardError => e
+        puts e
+        next
+      end
     end
   else
     raise IOError, "No input directories specified."
@@ -79,7 +84,7 @@ def list_visit(raw_directory, options = {})
     raise ScriptError, "Scaning filesystem directly..." if options[:force_scan]
     
     lookup_path = File.dirname(raw_directory).split(File::Separator).last == "dicoms" ?  File.join(raw_directory, '..') : raw_directory
-    visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path => File.expand_path(lookup_path)}})
+    visit = VisitRawDataDirectoryResource.find(:first, :params => {:search => {:path_contains => File.expand_path(lookup_path)}})
     
     raise IOError.new("Could not lookup visit using path #{lookup_path}.") unless visit
     raise IOError.new("Returned visit's path #{visit.path} does not match path.") unless visit.path == File.expand_path(lookup_path)

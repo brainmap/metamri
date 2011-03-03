@@ -164,11 +164,18 @@ class RawImageDataset
   # Returns a hash of attributes used for insertion into active record.
   # Options:  :thumb => FileHandle to thumbnail includes a thumbnail.
   def attributes_for_active_record(options = {})
-    thumbnail = options.has_key?(:thumb) ? options[:thumb] : nil
+    attrs = {}
     
-    unless (thumbnail.class == File || thumbnail == nil)
-      raise(IOError, "Thumbnail #{options[:thumb]} must be a #File instead of #{thumbnail.class}.")
+    # If the thumbnail is present and valid, add it to the hash.
+    # Otherwise don't add the key, or paperclip will delete the attachments (it deletes when given nil)
+    if options.has_key?(:thumb)
+      thumbnail = options[:thumb]
+      unless (thumbnail.class == File || thumbnail == nil)
+        raise(IOError, "Thumbnail #{options[:thumb]} must be a #File instead of #{thumbnail.class}.")
+      end
+      attrs[:thumbnail] = thumbnail
     end
+
     { :rmr => @rmr_number,
       :series_description => @series_description,
       :path => @directory,
@@ -178,10 +185,9 @@ class RawImageDataset
       :bold_reps => @raw_image_files.first.bold_reps,
       :slices_per_volume => @raw_image_files.first.num_slices,
       :scanned_file => @scanned_file,
-      :thumbnail => thumbnail,
       :dicom_series_uid => @dicom_series_uid,
       :dicom_taghash => @dicom_taghash
-    }
+    }.merge attrs
   end
   
   def create_thumbnail
@@ -272,7 +278,7 @@ Returns a path to the created dataset as a string if successful.
   
   def file_count
     unless @file_count
-      if @raw_image_files.first.dicom?
+      if @raw_image_files.first.dicom? or @raw_image_files.first.geifile?
         @file_count = Dir.open(@directory).reject{ |branch| /(^\.|.yaml$)/.match(branch) }.length
       elsif @raw_image_files.first.pfile?
         @file_count = 1
@@ -305,7 +311,7 @@ Returns a path to the created dataset as a string if successful.
   def relative_dataset_path(visit_dir = nil)
     image_file = @raw_image_files.first
     case image_file.file_type
-      when 'dicom'
+      when 'dicom', 'geifile'
         relative_dataset_path = File.basename(directory)
       when 'pfile'
         full_dataset_path = Pathname.new(File.join(directory, image_file.filename))
