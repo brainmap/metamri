@@ -1,10 +1,4 @@
-#!/usr/bin/env ruby
-
-=begin rdoc
-Builds Nifti files from Dicoms.
-=end
-
-
+# Builds Nifti files from Dicoms.
 module UnknownImageDataset
   # Always set AFNI GE DICOM Fix to "No" before conversion with to3d.
   ENV['AFNI_SLICE_SPACING_IS_GAP'] = "NO"
@@ -26,7 +20,7 @@ module UnknownImageDataset
     
     nifti_output_file = File.join(nifti_output_directory, nifti_filename)
     
-    File.makedirs(nifti_output_directory) unless File.directory?(nifti_output_directory)
+    FileUtils.makedirs(nifti_output_directory) unless File.directory?(nifti_output_directory)
     raise(IOError, "Cannot write to #{nifti_output_directory}") unless File.writable?(nifti_output_directory)
         
     nifti_conversion_command = "to3d -session #{nifti_output_directory} -prefix #{[nifti_filename, functional_args, input_files].compact.join(' ')}"
