@@ -338,6 +338,18 @@ Returns a path to the created dataset as a string if successful.
     @raw_image_files.first.dicom?
   end
   
+  # Helper predicate method to check whether the dataset is a DICOM dataset or not.
+  # This just sends dicom? to the first raw file in the dataset.
+  def pfile?
+    @raw_image_files.first.pfile?
+  end
+  
+  # Helper predicate method to check whether the dataset is a DICOM dataset or not.
+  # This just sends dicom? to the first raw file in the dataset.
+  def geifile?
+    @raw_image_files.first.geifile?
+  end
+  
 private
 
   # Gets the earliest timestamp among the raw image files in this dataset.

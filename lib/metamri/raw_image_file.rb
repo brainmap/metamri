@@ -577,6 +577,8 @@ private
     rmr_number_pat =           /Patient ID for this exam: ([[:graph:]]+)/i
     bold_reps_pat =            /Number of excitations: ([0-9]+)/i
     rep_time_pat =             /Pulse repetition time \(usec\): ([0-9]+)/i
+    study_uid_pat =            /Study entity unique ID: ([[:graph:]]+)/i
+    series_uid_pat =           /Series entity unique ID: ([[:graph:]]+)/i
 
     rmr_number_pat =~ @hdr_data
     @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
@@ -615,6 +617,12 @@ private
     
     rep_time_pat =~ @hdr_data
     @rep_time = ($1).to_f / 1000000
+    
+    study_uid_pat =~ @hdr_data
+    @dicom_study_uid = ($1).strip.chomp
+    
+    series_uid_pat =~ @hdr_data
+    @dicom_series_uid = ($1).strip.chomp
   end
  
 end
