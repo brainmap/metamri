@@ -111,7 +111,7 @@ class VisitRawDataDirectory
       @rmr_number = get_rmr_number
       @scanner_source = get_scanner_source
       @study_id = get_study_id
-      @dicom_study_uid = get_dicom_study_uid
+      @dicom_study_uid = get_dicom_study_uid unless dicom_datasets.empty?
       flash "Completed scanning #{@visit_directory}" if $LOG.level <= Logger::DEBUG
     else
       raise(IndexError, "No datasets could be scanned for directory #{@visit_directory}")
@@ -472,6 +472,12 @@ Returns an array of the created nifti files.
     end
   end
   
+  def dicom_datasets
+    dicom_sets ||= []
+    datasets.each {|ds| dicom_sets << ds if ds.dicom?}
+    return dicom_sets
+  end
+    
   def initialize_log
     # If a log hasn't been created, catch that here and go to STDOUT.
     unless $LOG
