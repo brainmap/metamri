@@ -46,7 +46,12 @@ class Pathname
         begin
           yield lc
         rescue StandardError => e
-          puts "#{e}"
+          case $LOG.level
+          when Logger::DEBUG
+            raise e
+          else
+            puts "#{e}"
+          end
         ensure
           lc.delete
         end

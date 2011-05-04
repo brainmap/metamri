@@ -107,12 +107,13 @@ class RawImageFile
     # file type is based on file name but only if the header was read successfully
     @file_type = determine_file_type
     
-    # try to import attributes from the header, raise an ioerror if any attributes
-    # are not found
+    # try to import attributes from the header, raise an ScriptError or NoMethodError 
+    # if any required attributes are not found
     begin
       import_hdr
     rescue ScriptError, NoMethodError => e
-      raise IOError, "Could not find required DICOM Header Meta Element: #{e}"
+      # puts e.backtrace
+      raise e, "Could not find required DICOM Header Meta Element: #{e}"
     rescue StandardError => e
       raise e, "Header import failed for file #{@filename}.  #{e}"
     end
@@ -619,7 +620,7 @@ private
     @rep_time = ($1).to_f / 1000000
     
     study_uid_pat =~ @hdr_data
-    @dicom_study_uid = ($1).strip.chomp
+    @dicom_study_uid = ($1).strip.chomp unless $1.nil?
     
     series_uid_pat =~ @hdr_data
     @dicom_series_uid = ($1).strip.chomp

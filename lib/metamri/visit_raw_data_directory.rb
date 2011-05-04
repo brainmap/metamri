@@ -342,8 +342,9 @@ Returns an array of the created nifti files.
     
     begin
       rawimagefile = RawImageFile.new(rawfile.to_s)
-    # rescue Exception => e
-    #   raise(e, "+++ Trouble reading raw image file #{rawfile}. #{e}")
+    # rescue StandardError => e
+      # puts e.backtrace
+      # raise(e, "+++ Trouble reading raw image file #{rawfile}. #{e}")
     end
     
     return RawImageDataset.new(original_parent_directory.to_s, [rawimagefile])
