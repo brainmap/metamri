@@ -1,7 +1,7 @@
 require 'tmpdir'
 begin
   %W{dicom RMagick}.each do |lib|
-    require lib
+    require lib unless defined?(lib)
   end
 rescue LoadError => e
   raise LoadError, "Could not load #{e}.  Thumbnailing will use slicer instead of ruby-dicom."

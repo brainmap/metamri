@@ -1,10 +1,13 @@
 $: << File.dirname(__FILE__)
 
-# begin
-#   require 'rubygems'
-#   gem 'activeresource', '<= 2.3.8'
-  require 'active_resource'
-# end
+
+begin
+  require 'rubygems'
+  require "bundler/setup"
+  Bundler.require(:default)
+  
+rescue LoadError
+end
 
 
 require 'metamri/core_additions'

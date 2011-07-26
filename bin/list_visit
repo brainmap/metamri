@@ -55,6 +55,7 @@ def run!
         list_visit raw_directory, options
       rescue StandardError => e
         puts e
+        puts e.backtrace if $LOG.level <= Logger::DEBUG
         next
       end
     end

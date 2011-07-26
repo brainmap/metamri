@@ -19,7 +19,7 @@ class VisitRawDataDirectoryResource < ActiveResource::Base
   end
   
   def datasets
-    @datasets ||= RawImageDatasetResource.find(:all, :from => "/visits/#{id}/image_datasets.xml" )
+    @datasets ||= RawImageDatasetResource.find(:all, :from => RawImageDatasetResource.collection_path('search[visit_id_eq]' => "#{id}"))
   end
   
   # Convert a Resource and its datasets to a VisitRawDataDirectory and 

@@ -8,8 +8,8 @@ Gem::Specification.new do |s|
   s.version = "0.2.5"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Kristopher J. Kosmatka"]
-  s.date = %q{2011-03-14}
+  s.authors = ["Kristopher J. Kosmatka", "Erik Kastman"]
+  s.date = %q{2011-07-18}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
   s.executables = ["convert_visit.rb", "import_visit.rb", "import_respiratory_files.rb", "import_study.rb", "list_visit"]
@@ -80,18 +80,30 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<sqlite3-ruby>, [">= 0"])
-      s.add_runtime_dependency(%q<dicom>, [">= 0"])
-      s.add_development_dependency(%q<rspec>, [">= 0"])
+      s.add_runtime_dependency(%q<metamri>, [">= 0"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_runtime_dependency(%q<sqlite3>, ["~> 1.3.3"])
+      s.add_runtime_dependency(%q<dicom>, ["~> 0.8"])
+      s.add_runtime_dependency(%q<activeresource>, ["~> 3.0"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
     else
-      s.add_dependency(%q<sqlite3-ruby>, [">= 0"])
-      s.add_dependency(%q<dicom>, [">= 0"])
-      s.add_dependency(%q<rspec>, [">= 0"])
+      s.add_dependency(%q<metamri>, [">= 0"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
+      s.add_dependency(%q<dicom>, ["~> 0.8"])
+      s.add_dependency(%q<activeresource>, ["~> 3.0"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
     end
   else
-    s.add_dependency(%q<sqlite3-ruby>, [">= 0"])
-    s.add_dependency(%q<dicom>, [">= 0"])
-    s.add_dependency(%q<rspec>, [">= 0"])
+    s.add_dependency(%q<metamri>, [">= 0"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
+    s.add_dependency(%q<dicom>, ["~> 0.8"])
+    s.add_dependency(%q<activeresource>, ["~> 3.0"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
   end
 end
 

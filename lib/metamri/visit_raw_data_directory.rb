@@ -59,9 +59,9 @@ class VisitRawDataDirectory
   # DICOM Study UID (Visit/Study Unique Identifier)
   attr_reader :dicom_study_uid
   
-  PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits'
-  # DATAPANDA_SERVER = 'http://localhost:3000'
-  DATAPANDA_SERVER = 'http://nelson'
+  PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits' unless defined?(PREPROCESS_REPOSITORY_DIRECTORY)
+  DATAPANDA_SERVER = 'http://nelson' unless defined?(DATAPANDA_SERVER)
+  # DATAPANDA_SERVER = 'http://localhost:3000' unless defined?(DATAPANDA_SERVER)
 
   
   # A new Visit instance needs to know the path to its raw data and scan_procedure name.  The scan_procedure

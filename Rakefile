@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'rake'
-require 'rake/rdoctask'
+require 'rdoc/task'
 require 'rake/testtask'
 
 begin
@@ -11,11 +11,12 @@ begin
     gemspec.description = "Extraction of MRI metadata and insertion into compatible sqlite3 databases."
     gemspec.email = "kk4@medicine.wisc.edu"
     gemspec.homepage = "http://github.com/brainmap/metamri"
-    gemspec.authors = ["Kristopher J. Kosmatka"]
-    gemspec.add_dependency('sqlite3-ruby')
-    gemspec.add_dependency('dicom')
-    # gemspec.add_dependency('rmagick')
-    gemspec.add_development_dependency('rspec')
+    gemspec.authors = ["Kristopher J. Kosmatka", "Erik Kastman"]
+    gemspec.add_dependency('sqlite3', '~>1.3.3')
+    gemspec.add_dependency('dicom', '~>0.8')
+    gemspec.add_dependency('activeresource', '~>3.0')
+    gemspec.add_development_dependency('rspec', '~>2.5')
+
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
