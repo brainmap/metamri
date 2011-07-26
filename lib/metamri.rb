@@ -4,8 +4,10 @@ $: << File.dirname(__FILE__)
 begin
   require 'rubygems'
   require "bundler/setup"
-  Bundler.require(:default)
-  
+  require 'active_resource'
+  require 'hirb'
+  require 'rspec'
+  require 'dicom'  
 rescue LoadError
 end
 

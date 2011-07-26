@@ -16,6 +16,7 @@ begin
     gemspec.add_dependency('dicom', '~>0.8')
     gemspec.add_dependency('activeresource', '~>3.0')
     gemspec.add_development_dependency('rspec', '~>2.5')
+    gemspec.add_dependency('hirb', '~>0.4')
 
   end
   Jeweler::GemcutterTasks.new
