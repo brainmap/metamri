@@ -92,14 +92,17 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_runtime_dependency(%q<sqlite3>, ["~> 1.3.3"])
       s.add_runtime_dependency(%q<dicom>, ["~> 0.8.0"])
       s.add_runtime_dependency(%q<activeresource>, ["~> 3.0"])
       s.add_runtime_dependency(%q<rmagick>, ["~> 2.13.1"])
-      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_runtime_dependency(%q<hirb>, ["~> 0.4"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<escoffier>, [">= 0"])
     else
       s.add_dependency(%q<metamri>, [">= 0"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<rspec>, ["~> 2.5"])
@@ -113,11 +116,13 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<dicom>, ["~> 0.8.0"])
       s.add_dependency(%q<activeresource>, ["~> 3.0"])
       s.add_dependency(%q<rmagick>, ["~> 2.13.1"])
-      s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<hirb>, ["~> 0.4"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<escoffier>, [">= 0"])
     end
   else
     s.add_dependency(%q<metamri>, [">= 0"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<rspec>, ["~> 2.5"])
@@ -131,8 +136,9 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<dicom>, ["~> 0.8.0"])
     s.add_dependency(%q<activeresource>, ["~> 3.0"])
     s.add_dependency(%q<rmagick>, ["~> 2.13.1"])
-    s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<hirb>, ["~> 0.4"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<escoffier>, [">= 0"])
   end
 end
 
