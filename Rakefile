@@ -13,8 +13,9 @@ begin
     gemspec.homepage = "http://github.com/brainmap/metamri"
     gemspec.authors = ["Kristopher J. Kosmatka", "Erik Kastman"]
     gemspec.add_dependency('sqlite3', '~>1.3.3')
-    gemspec.add_dependency('dicom', '~>0.8')
+    gemspec.add_dependency('dicom', '~>0.8.0')
     gemspec.add_dependency('activeresource', '~>3.0')
+    gemspec.add_dependency('rmagick', '~>2.13.1')
     gemspec.add_development_dependency('rspec', '~>2.5')
     gemspec.add_dependency('hirb', '~>0.4')
 

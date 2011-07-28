@@ -7,7 +7,8 @@ begin
   require 'active_resource'
   require 'hirb'
   require 'rspec'
-  require 'dicom'  
+  require 'dicom'
+  require 'rmagick'
 rescue LoadError
 end
 
@@ -20,9 +21,9 @@ require 'metamri/raw_image_dataset_resource'
 require 'metamri/visit_raw_data_directory_resource'
 require 'metamri/image_dataset_quality_check_resource'
 require 'metamri/dicom_additions'
+require 'metamri/raw_image_dataset_thumbnail'
 require 'fileutils'
 
-# require 'metamri/raw_image_dataset_thumbnail'
 # TODO Move raw_image_dataset_thumbnail out of metamri.  
 
 begin

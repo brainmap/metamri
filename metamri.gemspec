@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Kristopher J. Kosmatka", "Erik Kastman"]
-  s.date = %q{2011-07-26}
+  s.date = %q{2011-07-28}
   s.description = %q{Extraction of MRI metadata and insertion into compatible sqlite3 databases.}
   s.email = %q{kk4@medicine.wisc.edu}
   s.executables = ["convert_visit.rb", "import_visit.rb", "import_respiratory_files.rb", "import_study.rb", "list_visit"]
@@ -87,9 +87,15 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_runtime_dependency(%q<sqlite3>, ["~> 1.3.3"])
-      s.add_runtime_dependency(%q<dicom>, ["~> 0.8"])
+      s.add_runtime_dependency(%q<dicom>, ["~> 0.8.0"])
       s.add_runtime_dependency(%q<activeresource>, ["~> 3.0"])
+      s.add_runtime_dependency(%q<rmagick>, ["~> 2.13.1"])
       s.add_development_dependency(%q<rspec>, ["~> 2.5"])
       s.add_runtime_dependency(%q<hirb>, ["~> 0.4"])
     else
@@ -98,9 +104,15 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
+      s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
-      s.add_dependency(%q<dicom>, ["~> 0.8"])
+      s.add_dependency(%q<dicom>, ["~> 0.8.0"])
       s.add_dependency(%q<activeresource>, ["~> 3.0"])
+      s.add_dependency(%q<rmagick>, ["~> 2.13.1"])
       s.add_dependency(%q<rspec>, ["~> 2.5"])
       s.add_dependency(%q<hirb>, ["~> 0.4"])
     end
@@ -110,9 +122,15 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
+    s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<sqlite3>, ["~> 1.3.3"])
-    s.add_dependency(%q<dicom>, ["~> 0.8"])
+    s.add_dependency(%q<dicom>, ["~> 0.8.0"])
     s.add_dependency(%q<activeresource>, ["~> 3.0"])
+    s.add_dependency(%q<rmagick>, ["~> 2.13.1"])
     s.add_dependency(%q<rspec>, ["~> 2.5"])
     s.add_dependency(%q<hirb>, ["~> 0.4"])
   end
