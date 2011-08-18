@@ -1,7 +1,7 @@
 require 'pp'
 require 'rubygems';
 require 'yaml';
-require 'sqlite3';
+# require 'sqlite3';
 require 'dicom'
 
 

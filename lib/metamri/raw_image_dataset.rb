@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'sqlite3'
+# require 'sqlite3'
 require 'fileutils'
 require 'metamri/nifti_builder'
 
