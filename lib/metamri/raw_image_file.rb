@@ -41,7 +41,7 @@ class RawImageFile
   # An identifier unique to a 'visit', these are assigned by the scanner techs at scan time.
   attr_reader :rmr_number
   # An identifier unique to a Study Session - AKA Exam Number
-  attr_reader :study_id
+  attr_reader :exam_number
   # A short string describing the acquisition sequence. These come from the scanner.
   # code and are used to initialise SeriesDescription objects to find related attributes.
   attr_reader :series_description
@@ -73,6 +73,8 @@ class RawImageFile
   attr_reader :dicom_header
   # Hash of all DICOM Tags including their Names and Values (See #dicom_taghash for more information on the structure)
   attr_reader :dicom_taghash
+  # DICOM SOP Instance UID (from the scanned file)
+  attr_reader :dicom_image_uid
   # DICOM Series UID
   attr_reader :dicom_series_uid
   # DICOM Study UID
@@ -235,8 +237,16 @@ class RawImageFile
     return db_row
   end
   
-
-
+  # The series ID (dicom_series_uid [dicom] or series_uid [pfile/ifile])
+  # This is unique for DICOM datasets, but not for PFiles
+  def series_uid
+    @dicom_series_uid || @series_uid
+  end
+  
+  # The UID unique to the raw image file scanned
+  def image_uid
+    @dicom_image_uid || @image_uid
+  end
 
 private
 
@@ -325,6 +335,7 @@ private
   #   0008,0030 Study Time                           TM      6 101538
   #   0008,0080 Institution Name                     LO      4 Institution
   #   0008,1010 Station Name                         SH      8 Station
+  #   0008,0018 SOP Instance UID                            12 1.2.840.113619.2.155.3596.6906438.17031.1121881958.942
   #   0008,1030 Study Description                    LO     12 PILOT Study
   #   0008,103E Series Description                   LO     12 3pl loc FGRE
   #   0008,1070 Operators' Name                      PN      2 SP
@@ -386,9 +397,10 @@ private
       :software_version => "0018,1020",
       :protocol_name => "0018,1030",
       :bold_reps => "0020,0105",
-      :dicom_series_uid => "0020,000E",
+      :dicom_image_uid => "0008,0018",    # Each DICOM Image (i.e. raw image file) has a unique SOP Instance UID
+      :dicom_series_uid => "0020,000E",   # Series UID (shared by all dicoms in the same series)
       :dicom_study_uid => "0020,000D",
-      :study_id => "0020,0010",
+      :exam_number => "0020,0010",
       :num_slices => "0020,1002",
       :acquisition_matrix_x => "0028,0010",
       :acquisition_matrix_y => "0028,0011"
@@ -461,7 +473,7 @@ private
       :pat => /[ID Accession Number|ID Study Description]\/\/(RMR.*)\n/i, 
       :required => true 
     }
-    dicom_tag_templates[:study_id] = {
+    dicom_tag_templates[:exam_number] = {
       :type => :string,
       :pat => /STUDY ID\/\/([0-9]+)/i,
       :required => true 
@@ -580,6 +592,7 @@ private
     rep_time_pat =             /Pulse repetition time \(usec\): ([0-9]+)/i
     study_uid_pat =            /Study entity unique ID: ([[:graph:]]+)/i
     series_uid_pat =           /Series entity unique ID: ([[:graph:]]+)/i
+    image_uid_pat =            /Image unique ID: ([[:graph:]]+)/i    
 
     rmr_number_pat =~ @hdr_data
     @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
@@ -620,10 +633,14 @@ private
     @rep_time = ($1).to_f / 1000000
     
     study_uid_pat =~ @hdr_data
-    @dicom_study_uid = ($1).strip.chomp unless $1.nil?
+    @study_uid = ($1).strip.chomp unless $1.nil?
     
     series_uid_pat =~ @hdr_data
-    @dicom_series_uid = ($1).strip.chomp
+    @series_uid = ($1).strip.chomp unless $1.nil?
+    
+    image_uid_pat =~ @hdr_data
+    @image_uid = ($1).strip.chomp unless $1.nil?
+    
   end
  
 end

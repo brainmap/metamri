@@ -4,7 +4,7 @@ require 'tempfile'
 require 'yaml'
 require 'tmpdir'
 require 'fileutils'
-# require 'sqlite3'
+require 'sqlite3'
 require 'logger'
 require 'pp'
 require 'metamri/raw_image_file'
@@ -49,7 +49,7 @@ class VisitRawDataDirectory
   # scanner source
   attr_accessor :scanner_source
   # scanner-defined study id / exam number
-  attr_accessor :study_id
+  attr_accessor :exam_number
   #
   attr_accessor :db
   # Scan ID is the short name for the scan (tbiva018, tbiva018b)
@@ -67,7 +67,7 @@ class VisitRawDataDirectory
   # A new Visit instance needs to know the path to its raw data and scan_procedure name.  The scan_procedure
   # name must match a name in the database, if not a new scan_procedure entry will be inserted.
   def initialize(directory, scan_procedure_name=nil)
-    raise(IOError, "Visit directory not found: #{directory}") unless File.exist?(File.expand_path(directory))
+    raise(IOError, "Visit directory not found: #{directory}") unless File.directory? File.expand_path(directory)
     @visit_directory = File.expand_path(directory)
     @working_directory = Dir.tmpdir
     @datasets = Array.new
@@ -75,7 +75,7 @@ class VisitRawDataDirectory
     @rmr_number = nil
     @scan_procedure_name = scan_procedure_name.nil? ? get_scan_procedure_based_on_raw_directory : scan_procedure_name
     @db = nil
-    @study_id = nil
+    @exam_number = nil
     initialize_log
   end
   
@@ -84,8 +84,10 @@ class VisitRawDataDirectory
   # @datasets will hold an array of ImageDataset instances.  Setting the rmr here can raise an 
   # exception if no valid rmr is found in the datasets, be prepared to catch it.
   #
-  # Run a scan with the following options:
-  # - :ignore_patterns - An array of Regular Expressions that will be used to skip heavy directories.
+  # === Options
+  # 
+  # * <tt>:ignore_patterns</tt> -- Array of Regex'es. An array of Regular Expressions that will be used to skip heavy directories.
+  # 
   def scan(options = {})
     flash "Scanning visit raw data directory #{@visit_directory}" if $LOG.level <= Logger::INFO
     default_options = {:ignore_patterns => []}
@@ -110,8 +112,8 @@ class VisitRawDataDirectory
       @timestamp = get_visit_timestamp
       @rmr_number = get_rmr_number
       @scanner_source = get_scanner_source
-      @study_id = get_study_id
-      @dicom_study_uid = get_dicom_study_uid unless dicom_datasets.empty?
+      @exam_number = get_exam_number
+      @study_uid = get_study_uid unless dicom_datasets.empty?
       flash "Completed scanning #{@visit_directory}" if $LOG.level <= Logger::DEBUG
     else
       raise(IndexError, "No datasets could be scanned for directory #{@visit_directory}")
@@ -125,8 +127,8 @@ class VisitRawDataDirectory
       :rmr => @rmr_number, 
       :path => @visit_directory, 
       :scanner_source => @scanner_source ||= get_scanner_source,
-      :scan_number => @study_id,
-      :dicom_study_uid => @dicom_study_uid
+      :scan_number => @exam_number,
+      :dicom_study_uid => @study_uid
     }
   end
   
@@ -161,6 +163,7 @@ class VisitRawDataDirectory
       end
     rescue Exception => e
       puts e.message
+      puts e.backtrace
     ensure
       @db.close
       @db = nil
@@ -203,7 +206,7 @@ Returns an array of the created nifti files.
   def to_s
     puts; @visit_directory.length.times { print "-" }; puts
     puts "#{@visit_directory}"
-    puts "#{@rmr_number} - #{@timestamp.strftime('%F')} - #{@scanner_source} - #{@study_id unless @study_id.nil?}"
+    puts "#{@rmr_number} - #{@timestamp.strftime('%F')} - #{@scanner_source} - #{@exam_number unless @exam_number.nil?}"
     puts
     puts RawImageDataset.to_table(@datasets)
     return
@@ -260,18 +263,24 @@ Returns an array of the created nifti files.
   end
   
   def insert_new_visit(p_id)
-    puts sql_insert_visit(p_id)
-    @db.execute(sql_insert_visit(p_id))
-    return @db.last_insert_row_id
+    puts sql_insert_visit
+    @db.execute(sql_insert_visit)
+    visit_id = @db.last_insert_row_id
+    puts sql_insert_scan_procedures_visits(p_id, visit_id)
+    @db.execute(sql_insert_scan_procedures_visits(p_id, visit_id))
+    return visit_id
   end
   
   def get_existing_visit_id
     return @db.execute(sql_fetch_visit_matches).first['id']
   end
   
+  # ScanProcedure now in a separate table
+  # Ignore it for now. BAD! 
+  # Note: wtf
   def update_existing_visit(v_id, p_id)
-    puts sql_update_visit(v_id, p_id)
-    @db.execute(sql_update_visit(v_id, p_id))
+    puts sql_update_visit(v_id)
+    @db.execute(sql_update_visit(v_id))
   end
   
   def fetch_or_insert_scan_procedure
@@ -284,18 +293,21 @@ Returns an array of the created nifti files.
     return scan_procedure_matches.empty? ? new_scan_procedure_id : scan_procedure_matches.first['id']
   end
   
-  def sql_update_visit(v_id, p_id)
+  def sql_update_visit(v_id)
     "UPDATE visits SET 
     date = '#{@timestamp.to_s}',
     rmr = '#{@rmr_number}',
     path = '#{@visit_directory}',
-    scan_procedure_id = '#{p_id.to_s}',
     scanner_source = '#{@scanner_source}'
     WHERE id = '#{v_id}'"
   end
   
   def sql_insert_scan_procedure
     "INSERT INTO scan_procedures (codename) VALUES ('#{@scan_procedure_name}')"
+  end
+  
+  def sql_insert_scan_procedures_visits(scan_procedure_id, visit_id)
+    "INSERT INTO scan_procedures_visits (scan_procedure_id, visit_id) VALUES('#{scan_procedure_id}', '#{visit_id}')"
   end
   
   def sql_insert_series_description(sd)
@@ -307,7 +319,7 @@ Returns an array of the created nifti files.
   end
   
   def sql_fetch_scan_procedure_name
-    "SELECT * FROM scan_procedures WHERE codename = '#{@scan_procedure_name}'"
+    "SELECT * FROM scan_procedures WHERE codename = '#{@scan_procedure_name}' LIMIT 1"
   end
   
   def sql_fetch_series_description(sd)
@@ -320,13 +332,13 @@ Returns an array of the created nifti files.
   
 
   # generates an sql insert statement to insert this visit with a given participant id
-  def sql_insert_visit(scan_procedure_id=0)
+  def sql_insert_visit
     "INSERT INTO visits 
-    (date, scan_procedure_id, scan_number, initials, rmr, radiology_outcome, notes, transfer_mri, transfer_pet,
+    (date, scan_number, initials, rmr, radiology_outcome, notes, transfer_mri, transfer_pet,
     conference, compile_folder, dicom_dvd, user_id, path, scanner_source, created_at, updated_at) 
     VALUES 
-    ('#{@timestamp.to_s}', '#{scan_procedure_id.to_s}', '', '', '#{@rmr_number}', 'no', '', 'no', 'no', 
-    'no', 'no', 'no', NULL, '#{@visit_directory}', '#{@scanner_source}', '#{DateTime.now}', '#{DateTime.now}')"
+    ('#{@timestamp.to_s}', '', '', '#{@rmr_number}', 'no', '', 'yes', 'no', 
+    'no', 'no', '', NULL, '#{@visit_directory}', '#{@scanner_source}', '#{DateTime.now}', '#{DateTime.now}')"
   end
 
   # Build a new RawImageDataset from a path to the rawfile and parent directory.
@@ -386,6 +398,7 @@ Returns an array of the created nifti files.
   
   # retrieves a scanner source from the collection of datasets, raises Exception of none is found
   def get_scanner_source
+    raise IOError, "No datasets available, can't look for a scanner source" if @datasets.empty?
     @datasets.each do |ds|
       return ds.scanner_source unless ds.scanner_source.nil?
     end
@@ -393,15 +406,15 @@ Returns an array of the created nifti files.
   end
   
   # retrieves exam number / scan id from first #RawImageDataset
-  def get_study_id
+  def get_exam_number
     @datasets.each do |ds|
-      return ds.study_id unless ds.study_id.nil?
+      return ds.exam_number unless ds.exam_number.nil?
     end
     # raise(IOError, "No valid study id / exam number found.")
   end
   
   # retrieves exam number / scan id from first #RawImageDataset
-  def get_dicom_study_uid
+  def get_study_uid
     @datasets.each do |ds|
       return ds.dicom_study_uid unless ds.dicom_study_uid.nil?
     end

@@ -21,7 +21,7 @@ class RawImageDataset
   # From the first raw image file in the dataset
   attr_reader :timestamp
   # From the first raw image file in the dataset
-  attr_reader :study_id
+  attr_reader :exam_number
   # A key string unique to a dataset composed of the rmr number and the timestamp.
   attr_reader :dataset_key
   # the file scanned
@@ -86,8 +86,8 @@ class RawImageDataset
     @scanner_source = @raw_image_files.first.source
     raise(IndexError, "No scanner source found") if @scanner_source.nil?
         
-    @study_id = @raw_image_files.first.study_id.nil? ? nil : @raw_image_files.first.study_id
-    # raise(IndexError, "No study id / exam number found") if @study_id.nil?
+    @exam_number = @raw_image_files.first.exam_number.nil? ? nil : @raw_image_files.first.exam_number
+    validates_metainfo_for :exam_number, :msg => "No study id / exam number found", :optional => true
     
     @study_description = @raw_image_files.first.study_description
     validates_metainfo_for :study_description, :msg => "No study description found" if dicom?
@@ -109,7 +109,10 @@ class RawImageDataset
     
     @dicom_taghash = @raw_image_files.first.dicom_taghash
     validates_metainfo_for :dicom_taghash if dicom?
-        
+    
+    @image_uid  = @raw_image_files.first.image_uid
+    validates_metainfo_for :image_uid if pfile?
+    
     $LOG ||= Logger.new(STDOUT)
   end
   
@@ -132,10 +135,10 @@ class RawImageDataset
   def db_insert(visit_id)
     "INSERT INTO image_datasets
     (rmr, series_description, path, timestamp, created_at, updated_at, visit_id, 
-    glob, rep_time, bold_reps, slices_per_volume, scanned_file)
+    glob, rep_time, bold_reps, slices_per_volume, scanned_file, 'dicom_study_uid')
     VALUES ('#{@rmr_number}', '#{@series_description}', '#{@directory}', '#{@timestamp.to_s}', '#{DateTime.now}', 
     '#{DateTime.now}', '#{visit_id}', '#{self.glob}', '#{@raw_image_files.first.rep_time}', 
-    '#{@raw_image_files.first.bold_reps}', '#{@raw_image_files.first.num_slices}', '#{@scanned_file}')"
+    '#{@raw_image_files.first.bold_reps}', '#{@raw_image_files.first.num_slices}', '#{@scanned_file}' )"
   end
   
   def db_update(dataset_id)
@@ -186,7 +189,8 @@ class RawImageDataset
       :slices_per_volume => @raw_image_files.first.num_slices,
       :scanned_file => @scanned_file,
       :dicom_series_uid => @dicom_series_uid,
-      :dicom_taghash => @dicom_taghash
+      :dicom_taghash => @dicom_taghash,
+      :image_uid => @image_uid
     }.merge attrs
   end
   
@@ -361,6 +365,15 @@ private
   def directory_basename
     File.basename(@directory)
   end
+  
+  # Metamri will return both dicom_series_uid and image_uid for ActiveRecord
+  # Correct UID choosing will happen in the Panda.
+  # But, here's a shortcut to a pfile?/dicom? ternary for correct uid for dataset
+  def dataset_uid
+    @raw_image_files.first.dicom_series_uid ? 
+      @raw_image_files.first.dicom_series_uid : @raw_image_files.first.image_uid
+  end
+  
 
   # Ensure that metadata is present in instance variables.
   #

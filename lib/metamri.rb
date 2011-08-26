@@ -9,6 +9,7 @@ begin
   require 'rspec'
   require 'dicom'
   require 'rmagick'
+  require 'sqlite'
 rescue LoadError
 end
 

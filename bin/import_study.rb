@@ -75,6 +75,11 @@ STUDIES = {
                      :filter => /^pd..._/,
                      :codename => 'gallagher.pd.visit1' 
   },
+  :pc_4000  =>     { :dir => '/Data/vtrak1/raw/pc_4000',
+                     :logfile => 'pc_4000.scan.log',
+                     :filter => /^pc001/,
+                     :codename => 'johnson.pc4000.visit1' 
+  },
   :pib_pilot =>    { :dir => '/Data/vtrak1/raw/pib_pilot_mri',
                      :logfile => 'pib.mri.pilot.scan.log',
                      :filter => /^cpr0/,
@@ -148,6 +153,8 @@ def import_study(study, dbfile)
       puts "Exception message: #{e.message}"
       log.error "There was a problem scanning a dataset in #{visitdir}... skipping."
       log.error "Exception message: #{e.message}"
+      log.error e.backtrace
+      raise e
     ensure
       v = nil
     end
