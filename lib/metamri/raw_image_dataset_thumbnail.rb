@@ -1,6 +1,6 @@
 require 'tmpdir'
 begin
-  %W{dicom RMagick}.each do |lib|
+  %W{dicom }.each do |lib|     #####RMagick
     require lib unless defined?(lib)
   end
 rescue LoadError => e
@@ -86,10 +86,12 @@ class RawImageDatasetThumbnail
     default_name = @dataset.series_description.escape_filename
     filepath ||= File.join(output_directory, default_name + '.png')
     
+
     begin
       case @processor
       when :rubydicom
-        @path = create_thumbnail_with_rubydicom(filepath)
+        @path = create_thumbnail_with_rubydicom_dcmtk(filepath)
+        #@path = create_thumbnail_with_rubydicom(filepath)
       when :slicer
         @path = create_thumbnail_with_fsl_slicer(filepath)
       end
@@ -108,6 +110,38 @@ class RawImageDatasetThumbnail
   end
   
   private
+
+    # Creates a thumbnail using RubyDicom and dcmtk
+  # Pass in an absolute or relative filepath, including filename and extension.
+  # Returns an absolute path to the created thumbnail image.
+  def create_thumbnail_with_rubydicom_dcmtk(output_file)
+    output_file = File.expand_path(output_file)
+
+    dicom_files = Dir.glob(File.join(dataset.directory, dataset.glob))
+    if dicom_files.empty?  # Try the glob again with a zipped extension.
+      dicom_files = Dir.glob(File.join(dataset.directory, dataset.glob) + '*.bz2')
+    end
+    if dicom_files.empty? # If still empty...
+      raise StandardError, "Could not find dicom files using #{dataset.glob} in #{dataset.directory}"
+    end
+    dicom_file = Pathname(dicom_files[(dicom_files.size/2)+1])
+    dicom_file.local_copy do |lc|
+      dcm = DICOM::DObject.new(lc.to_s)
+      raise ScriptError, "Could not read dicom #{dicom_file.to_s}" unless dcm.read_success
+      v_call = "dcmj2pnm -v +Wi 1 --write-png "+lc.to_s+" "+output_file
+      v_results = %x[#{v_call}]
+      puts "results= "+v_results
+      puts "dicom_file= "+dicom_file.to_s
+      puts "output_file= "+output_file
+      ####    image = dcm.get_image_magick(:rescale => true)
+      #### raise ScriptError, "RubyDicom did not return an image array (this is probably a color image)." unless image.kind_of? Magick::Image
+      #### image.write(output_file)
+    end
+
+    raise(ScriptError, "Error creating thumbnail #{output_file}") unless File.exist?(output_file)
+
+    return output_file
+  end
   
   # Creates a thumbnail using RubyDicom
   # Pass in an absolute or relative filepath, including filename and extension.

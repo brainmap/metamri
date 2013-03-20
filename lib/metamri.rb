@@ -8,7 +8,7 @@ begin
   require 'hirb'
   require 'rspec'
   require 'dicom'
-  require 'rmagick'
+  ##### require 'rmagick'
   require 'sqlite'
 rescue LoadError
 end
