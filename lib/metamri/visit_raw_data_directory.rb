@@ -4,7 +4,7 @@ require 'tempfile'
 require 'yaml'
 require 'tmpdir'
 require 'fileutils'
-#require 'sqlite3'
+require 'sqlite3'  # being used in code with inserts and things?????
 require 'logger'
 require 'pp'
 require 'metamri/raw_image_file'
