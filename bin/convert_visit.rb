@@ -42,7 +42,7 @@ def convert_visit(raw_directory, scan_procedure_codename, output_directory = nil
   output_directory = output_directory ||= v.default_preprocess_directory
 
   begin
-    default_options = {:ignore_patterns => [/vipr/,/900$/,/901$/,/999$/]}  # seems to like number , not like string
+    default_options = {:ignore_patterns => [/vipr/,/$Processed-Images$/,/900$/,/901$/,/999$/]}  # seems to like number , not like string
     #options = default_options.merge(options)
     v.scan(default_options)
     v.to_nifti!(output_directory)
