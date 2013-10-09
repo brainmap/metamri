@@ -19,8 +19,9 @@ class RawImageFile
   MIN_HDR_LENGTH = 400
   DICOM_HDR = "dicom_hdr"
   RDGEHDR = "rdgehdr"
+  PRINTRAW = "printraw"
   RUBYDICOM_HDR = "rubydicom"
-  VALID_HEADERS = [DICOM_HDR, RDGEHDR, RUBYDICOM_HDR]
+  VALID_HEADERS = [DICOM_HDR, PRINTRAW, RDGEHDR, RUBYDICOM_HDR]
   MONTHS = {
     :jan => "01", :feb => "02", :mar => "03", :apr => "04", :may => "05", 
     :jun => "06", :jul => "07", :aug => "08", :sep => "09", :oct => "10", 
@@ -269,15 +270,25 @@ private
 
     case File.basename(absfilepath)
     when /^P.{5}\.7$|^I\..{3}/
-      # Try reading Pfiles or Genesis I-Files with GE's rdgehdr
-      @current_hdr_reader = RDGEHDR
-      header = `#{RDGEHDR} '#{absfilepath}' 2> /dev/null`
+            # Try reading Pfiles or Genesis I-Files with GE's printraw
+      @current_hdr_reader = PRINTRAW
+      header = `#{PRINTRAW} '#{absfilepath}' 2> /dev/null`
       #header = `#{RDGEHDR} #{absfilepath}`
       if ( header.chomp != "" and
            header.length > MIN_HDR_LENGTH )
         @current_hdr_reader = nil
-        return [ header, RDGEHDR ]
+        return [ header, PRINTRAW ]
       end
+      # Try reading Pfiles or Genesis I-Files with GE's rdgehdr -- rdgehdr newer version needs macos 10.8, adrcdev2 = 10.7.5 - 
+      # works on old headers, not on new header format
+      ###@current_hdr_reader = RDGEHDR
+      ###header = `#{RDGEHDR} '#{absfilepath}' 2> /dev/null`
+      #header = `#{RDGEHDR} #{absfilepath}`
+      ###if ( header.chomp != "" and
+      ###     header.length > MIN_HDR_LENGTH )
+      ###  @current_hdr_reader = nil
+      ###  return [ header, RDGEHDR ]
+      ### end
     else
       # Try reading with RubyDICOM
       @current_hdr_reader = RUBYDICOM_HDR
@@ -323,6 +334,7 @@ private
     case @hdr_reader
       when "rubydicom" then rubydicom_hdr_import
       when "dicom_hdr" then dicom_hdr_import
+      when "printraw" then printraw_import
       when "rdgehdr" then rdgehdr_import
     end
   end
@@ -573,6 +585,75 @@ private
     
   end
   
+  def printraw_import
+    source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i
+    num_slices_pat =           /rdb_hdr_nslices = ([0-9]+)/i
+    slice_thickness_pat =      /slthick = ([[:graph:]]+)/i
+    slice_spacing_pat =        /scanspacing = ([[:graph:]]+)/i
+    date_pat =                 /ex_datetime = (.*)\n/i
+    gender_pat =               /patsex = (1|2)/i
+    acquisition_matrix_x_pat = /imatrix_X = ([0-9]+)/i
+    acquisition_matrix_y_pat = /imatrix_Y = ([0-9]+)/i
+    series_description_pat =   /se_desc = ([[:graph:] \t]+)/i
+    recon_diam_pat =           /dfov = ([0-9]+)/i
+    rmr_number_pat =           /Patient ID for this exam: ([[:graph:]]+)/i
+    bold_reps_pat =            /nex = ([0-9]+)/i
+    rep_time_pat =             /reptime = ([0-9]+)/i      # not sure ifg this is right
+    study_uid_pat =            /Ssop_uid = ([[:graph:]]+)/i
+    series_uid_pat =           /series_uid = ([[:graph:]]+)/i
+    image_uid_pat =            /image_uid = (.*)/i #([[:graph:]]+)/i   
+
+
+    rmr_number_pat =~ @hdr_data
+    @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
+    
+    source_pat =~ @hdr_data
+    @source = ($1).nil? ? "source not found" : ($1).strip.chomp
+    
+    num_slices_pat =~ @hdr_data
+    @num_slices = ($1).to_i
+    
+    slice_thickness_pat =~ @hdr_data
+    @slice_thickness = ($1).to_f
+    
+    slice_spacing_pat =~ @hdr_data
+    @slice_spacing = ($1).to_f
+    
+    date_pat =~ @hdr_data
+    @timestamp = Time.at($1.to_i).to_datetime
+    # @timestamp = DateTime.parse($1)  --- 2 rows- same start of line- first since epoch, 2nd date stamnp
+    
+    gender_pat =~ @hdr_data
+    @gender = $1 == 1 ? "M" : "F"
+    
+    acquisition_matrix_x_pat =~ @hdr_data
+    @acquisition_matrix_x = ($1).to_i
+    acquisition_matrix_y_pat =~ @hdr_data
+    @acquisition_matrix_y = ($1).to_i
+    
+    series_description_pat =~ @hdr_data
+    @series_description = ($1).strip.chomp
+    
+    
+    recon_diam_pat =~ @hdr_data
+    @reconstruction_diameter = ($1).to_i
+    
+    bold_reps_pat =~ @hdr_data
+    @bold_reps = ($1).to_i
+    
+    rep_time_pat =~ @hdr_data
+    @rep_time = ($1).to_f / 1000000
+    
+    study_uid_pat =~ @hdr_data
+    @study_uid = ($1).strip.chomp unless $1.nil?
+    
+    series_uid_pat =~ @hdr_data
+    @series_uid = ($1).strip.chomp unless $1.nil?
+    
+    image_uid_pat =~ @hdr_data
+    @image_uid = ($1).strip.chomp unless $1.nil?
+
+  end
 
   # Extracts a collection of metadata from @hdr_data retrieved using the rdgehdr
   # utility. 
