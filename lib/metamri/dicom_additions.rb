@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Dicom Additions is a test extension of DICOM to allow for gathering common tags
 class DicomGroup
   # Array of DObjects to aggregate

@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency('dicom', "~> 0.8.0")
   s.add_runtime_dependency('activeresource', "~> 3.0")
-  ##### s.add_runtime_dependency('rmagick', "~> 2.13.1") 
+  # s.add_runtime_dependency('rmagick') 
   s.add_runtime_dependency('hirb', "~> 0.4")
   s.add_runtime_dependency('sqlite3', "~>1.3.4")
   s.add_development_dependency('rspec', "~> 2.5")

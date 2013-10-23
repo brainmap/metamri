@@ -1,3 +1,4 @@
+# encoding: utf-8
 # An ImageQualityCheckResource is a ruby object that represents a quality check
 # pulled down from the DataPanda database.  It contains notes on the quality of
 # specific images, with a note for each possible problem, and an overall note.

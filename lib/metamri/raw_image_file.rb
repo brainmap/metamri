@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'pp'
 require 'rubygems';
 require 'yaml';
@@ -31,7 +32,7 @@ class RawImageFile
 
   # The file name that the instance represents.
   attr_reader :filename
-  # Which header reading utility reads this file, currently 'rdgehdr' or 'dicom_hdr'.
+  # Which header reading utility reads this file, currently 'rdgehdr'(old p-files&wimr) or 'dicom_hdr' or 'printraw'(new p-files->waisman).
   attr_reader :hdr_reader
   # File types are either 'dicom' or 'pfile'.
   attr_reader :file_type
@@ -271,14 +272,21 @@ private
     case File.basename(absfilepath)
     when /^P.{5}\.7$|^I\..{3}/
             # Try reading Pfiles or Genesis I-Files with GE's printraw
-      @current_hdr_reader = PRINTRAW
-      header = `#{PRINTRAW} '#{absfilepath}' 2> /dev/null`
-      #header = `#{RDGEHDR} #{absfilepath}`
-      if ( header.chomp != "" and
-           header.length > MIN_HDR_LENGTH )
-        @current_hdr_reader = nil
-        return [ header, PRINTRAW ]
-      end
+            # printraw works on the new waisman p-files
+            # rdgehdr works on wimr p-files, and old waisman p-files 
+         @current_hdr_reader = PRINTRAW
+      puts "aaaaaaa absfilepath="+absfilepath
+         header = `#{PRINTRAW} '#{absfilepath}' 2> /dev/null`
+         #header = `#{RDGEHDR} #{absfilepath}`
+      #puts "bbbbb header="+header
+         header = header.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "").force_encoding('UTF-8')
+         if ( header.chomp != "" and
+              header.length > MIN_HDR_LENGTH )
+            @current_hdr_reader = nil
+            return [ header, PRINTRAW ]
+         end
+
+
       # Try reading Pfiles or Genesis I-Files with GE's rdgehdr -- rdgehdr newer version needs macos 10.8, adrcdev2 = 10.7.5 - 
       # works on old headers, not on new header format
       ###@current_hdr_reader = RDGEHDR
@@ -349,7 +357,7 @@ private
   #   0008,1010 Station Name                         SH      8 Station
   #   0008,0018 SOP Instance UID                            12 1.2.840.113619.2.155.3596.6906438.17031.1121881958.942
   #   0008,1030 Study Description                    LO     12 PILOT Study
-  #   0008,103E Series Description                   LO     12 3pl loc FGRE
+  #   0008,103E Series Description                   LO     12 3pl loc FGR
   #   0008,1070 Operators' Name                      PN      2 SP
   #   0008,1090 Manufacturer's Model Name            LO     16 DISCOVERY MR750
   #   0010,0010 Patient's Name                       PN     12 mosPilot
@@ -586,6 +594,8 @@ private
   end
   
   def printraw_import
+    test_pattern           = /purecalseriesuid =/
+    #rdbm_revision_number =     /rdb_hdr_rdbm_rev = ([0-9.])/
     source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i
     num_slices_pat =           /rdb_hdr_nslices = ([0-9]+)/i
     slice_thickness_pat =      /slthick = ([[:graph:]]+)/i
@@ -603,6 +613,10 @@ private
     series_uid_pat =           /series_uid = ([[:graph:]]+)/i
     image_uid_pat =            /image_uid = (.*)/i #([[:graph:]]+)/i   
 
+     # @hdr_data = @hdr_data.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "").force_encoding('UTF-8')
+    #@hdr_data = @hdr_data.encode!('UTF-8', 'UTF-8', :invalid => :replace)
+     #@hdr_data_2 = @hdr_data.encode("UTF-8") 
+     @hdr_data.encode!("utf-8", :invalid => :replace)
 
     rmr_number_pat =~ @hdr_data
     @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
@@ -614,7 +628,7 @@ private
     @num_slices = ($1).to_i
     
     slice_thickness_pat =~ @hdr_data
-    @slice_thickness = ($1).to_f
+    @slice_thickness = ($1).to_s
     
     slice_spacing_pat =~ @hdr_data
     @slice_spacing = ($1).to_f
@@ -634,7 +648,6 @@ private
     series_description_pat =~ @hdr_data
     @series_description = ($1).strip.chomp
     
-    
     recon_diam_pat =~ @hdr_data
     @reconstruction_diameter = ($1).to_i
     
@@ -648,8 +661,7 @@ private
     @study_uid = ($1).strip.chomp unless $1.nil?
     
     series_uid_pat =~ @hdr_data
-    @series_uid = ($1).strip.chomp unless $1.nil?
-    
+    @series_uid = ($1).strip.chomp unless $1.nil?  
     image_uid_pat =~ @hdr_data
     @image_uid = ($1).strip.chomp unless $1.nil?
 
@@ -712,6 +724,7 @@ private
     
     rep_time_pat =~ @hdr_data
     @rep_time = ($1).to_f / 1000000
+
     
     study_uid_pat =~ @hdr_data
     @study_uid = ($1).strip.chomp unless $1.nil?

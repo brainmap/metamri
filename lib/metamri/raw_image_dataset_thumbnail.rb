@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'tmpdir'
 begin
   %W{dicom }.each do |lib|     #####RMagick

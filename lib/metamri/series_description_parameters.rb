@@ -1,3 +1,4 @@
+# encoding: utf-8
 =begin rdoc
 Provides a mapping between series descriptions that are extracted from raw image
 headers and some associated attributes.

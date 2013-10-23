@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Builds Nifti files from Dicoms.
 module UnknownImageDataset
   # Always set AFNI GE DICOM Fix to "No" before conversion with to3d.
