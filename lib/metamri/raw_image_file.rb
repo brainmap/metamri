@@ -594,8 +594,6 @@ private
   end
   
   def printraw_import
-    test_pattern           = /purecalseriesuid =/
-    #rdbm_revision_number =     /rdb_hdr_rdbm_rev = ([0-9.])/
     source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i
     num_slices_pat =           /rdb_hdr_nslices = ([0-9]+)/i
     slice_thickness_pat =      /slthick = ([[:graph:]]+)/i
@@ -616,11 +614,22 @@ private
      # @hdr_data = @hdr_data.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "").force_encoding('UTF-8')
     #@hdr_data = @hdr_data.encode!('UTF-8', 'UTF-8', :invalid => :replace)
      #@hdr_data_2 = @hdr_data.encode("UTF-8") 
-     @hdr_data.encode!("utf-8", :invalid => :replace)
+     #@hdr_data.encode!("ISO-8859-1", :invalid => :replace).encode("UTF-8")
+     #@hdr_data.encode("UTF-8", :invalid => :replace, :replace => "") ==  invalid byte sequence in UTF-8
+     #@hdr_data.encode!("UTF-8", :invalid => :replace, :replace => "")  invalid byte sequence in UTF-8
+     #@hdr_data.encode("ISO-8859-1", :invalid => :replace)  invalid byte sequence in UTF-8
+     #@hdr_data = @hdr_data.encode('UTF-8','binary', :invalid => :replace,:undef => :replace, :replace =>'') #Attribute was supposed to be a Hash, but was a String
+     #@hdr_data = @hdr_data.encode('UTF-8','UTF-8', :invalid => :replace,:undef => :replace, :replace =>'') # invalid byte sequence in UTF-8
+     #@hdr_data.encode('UTF-8','UTF-8', :invalid => :replace,:undef => :replace, :replace =>'') # invalid byte sequence in UTF-8
+     hdr_data_bak = @hdr_data
+     @hdr_data.encode!("ISO-8859-1", :invalid => :replace).encode("UTF-8")  #Attribute was supposed to be a Hash, but was a String
+
+     puts "aaaaaaaaaaa"
 
     rmr_number_pat =~ @hdr_data
     @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
-    
+    puts "bbbbbbbb "
+
     source_pat =~ @hdr_data
     @source = ($1).nil? ? "source not found" : ($1).strip.chomp
     
@@ -628,7 +637,7 @@ private
     @num_slices = ($1).to_i
     
     slice_thickness_pat =~ @hdr_data
-    @slice_thickness = ($1).to_s
+    @slice_thickness = ($1).to_f
     
     slice_spacing_pat =~ @hdr_data
     @slice_spacing = ($1).to_f
@@ -664,6 +673,9 @@ private
     @series_uid = ($1).strip.chomp unless $1.nil?  
     image_uid_pat =~ @hdr_data
     @image_uid = ($1).strip.chomp unless $1.nil?
+
+puts "rrrrrr @image_uid ="+@image_uid .to_s
+    @hdr_data = nil
 
   end
 
