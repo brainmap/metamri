@@ -119,7 +119,7 @@ class RawImageFile
       # puts e.backtrace
       raise e, "Could not find required DICOM Header Meta Element: #{e}"
     rescue StandardError => e
-      raise e, "Header import failed for file #{@filename}.  #{e}"
+      raise e, "Header import failed for file #{@filename}.  #{e} . Has the scanner software version changed? A new version of the p-file reading software (printraw or rdgehdr) might be needed. "
     end
     
     # deallocate the header data to save memory space.
