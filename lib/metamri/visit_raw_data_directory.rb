@@ -188,7 +188,17 @@ Returns an array of the created nifti files.
         
     @datasets.each do |dataset|
       nifti_output_path = output_directory
-      nifti_filename = "#{scanid}_#{dataset.series_description.escape_filename}_#{File.basename(dataset.directory).escape_filename}.nii"
+      v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      v_series_description = "."+dataset.series_description.gsub(/ /,"").gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      if v_basename.include? v_series_description
+           # want the scan series number - e.g. 00001 at the end
+           v_tmp_filename =  v_basename.gsub(v_series_description,"")
+           nifti_filename = "#{scanid}_#{dataset.series_description.escape_filename}_#{v_tmp_filename}.nii"
+      else
+           nifti_filename = "#{scanid}_#{dataset.series_description.escape_filename}_#{File.basename(dataset.directory).escape_filename}.nii"
+      end
+
+      #nifti_filename = "#{scanid}_#{dataset.series_description.escape_filename}_#{File.basename(dataset.directory).escape_filename}.nii"
 
       Pathname.new(dataset.directory).all_dicoms do |dicom_files| 
         nifti_input_path = File.dirname(dicom_files.first)
