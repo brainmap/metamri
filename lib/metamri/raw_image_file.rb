@@ -300,7 +300,9 @@ private
     else
       # Try reading with RubyDICOM
       @current_hdr_reader = RUBYDICOM_HDR
-      header = DICOM::DObject.new(absfilepath)
+      ####header = DICOM::DObject.new(absfilepath) # changing from dicom 0.8.0  to 0.9.5
+      header = DICOM::DObject.read(absfilepath)
+
       if defined? header.read_success && header.read_success
         @current_hdr_reader = nil
         return [header, RUBYDICOM_HDR] 

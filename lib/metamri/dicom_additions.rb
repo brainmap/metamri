@@ -11,7 +11,8 @@ class DicomGroup
   # Initialize with an array of strings or DICOM::DObjects to aggregate
   def initialize(dicomgroup)
     if dicomgroup.select {|dcm| dcm.is_a? DICOM::DObject }.empty?
-      @dobjects = dicomgroup.collect {|dcm| DICOM::DObject.new(dcm)}
+      @dobjects = dicomgroup.collect {|dcm| DICOM::DObject.read(dcm)} 
+      #@dobjects = dicomgroup.collect {|dcm| DICOM::DObject.new(dcm)}  # changing from dicom 0.8.0  to 0.9.5
     else 
       @dobjects = dicomgroup
     end

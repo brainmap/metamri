@@ -127,7 +127,8 @@ class RawImageDatasetThumbnail
     end
     dicom_file = Pathname(dicom_files[(dicom_files.size/2)+1])
     dicom_file.local_copy do |lc|
-      dcm = DICOM::DObject.new(lc.to_s)
+      #dcm = DICOM::DObject.new(lc.to_s) # changing from dicom 0.8.0  to 0.9.5
+      dcm = DICOM::DObject.read(lc.to_s)
       raise ScriptError, "Could not read dicom #{dicom_file.to_s}" unless dcm.read_success
       v_call = "dcmj2pnm -v +Wi 1 --write-png "+lc.to_s+" "+output_file
       v_results = %x[#{v_call}]
@@ -159,7 +160,8 @@ class RawImageDatasetThumbnail
     end
     dicom_file = Pathname(dicom_files[dicom_files.size/2])
     dicom_file.local_copy do |lc|
-      dcm = DICOM::DObject.new(lc.to_s)
+      #dcm = DICOM::DObject.new(lc.to_s) # changing from dicom 0.8.0  to 0.9.5
+      dcm = DICOM::DObject.read(lc.to_s)
       raise ScriptError, "Could not read dicom #{dicom_file.to_s}" unless dcm.read_success
       image = dcm.get_image_magick(:rescale => true)
       raise ScriptError, "RubyDicom did not return an image array (this is probably a color image)." unless image.kind_of? Magick::Image
