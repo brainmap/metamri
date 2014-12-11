@@ -61,7 +61,7 @@ class VisitRawDataDirectory
   attr_reader :dicom_study_uid
   
   PREPROCESS_REPOSITORY_DIRECTORY = '/Data/vtrak1/preprocessed/visits' unless defined?(PREPROCESS_REPOSITORY_DIRECTORY)
-  DATAPANDA_SERVER = 'http://nelson' unless defined?(DATAPANDA_SERVER)
+  DATAPANDA_SERVER = 'https://adrcdev2.dom.wisc.edu' unless defined?(DATAPANDA_SERVER)
   # DATAPANDA_SERVER = 'http://localhost:3000' unless defined?(DATAPANDA_SERVER)
 
   
