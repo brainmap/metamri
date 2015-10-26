@@ -42,7 +42,9 @@ def convert_visit(raw_directory, scan_procedure_codename, output_directory = nil
   output_directory = output_directory ||= v.default_preprocess_directory
 
   begin
-    default_options = {:ignore_patterns => [/vipr/,/ge_physios/,/raw$/,/pfiles/,/Processed-Images/,/900$/,/901$/,/999$/,/\/01300\./,/\/01301\./,/\/01001\./,/\/01002\./,/\/01000\./,/\/00600\./]}  # does not like "raw" because in dir path
+   ##  default_options = {:ignore_patterns => [/vipr/,/ge_physios/,/raw$/,/pfiles/,/Processed-Images/,/900$/,/901$/,/999$/,/\/01300\./,/\/01301\./,/\/01001\./,/\/01002\./,/\/01000\./,/\/00600\./]}  # does not like "raw" because in dir path
+   ## new flair has numbers in name and should not be skipped - removing
+    default_options = {:ignore_patterns => [/vipr/,/ge_physios/,/raw$/,/pfiles/,/Processed-Images/]}  # does not like "raw" because in dir path
     #options = default_options.merge(options)
     v.scan(default_options)
     v.to_nifti!(output_directory)
