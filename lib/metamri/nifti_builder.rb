@@ -12,7 +12,7 @@ module UnknownImageDataset
       input_files = "#{input_options[:input_directory]}/'#{glob}'"
     else input_files = "#{Dir.tmpdir}/'#{glob}'"
     end
-    
+
     if @raw_image_files.first.rep_time && @raw_image_files.first.bold_reps && @raw_image_files.first.num_slices && !input_options[:no_timing_options]
       slice_order = "altplus"
       functional_args = "-time:zt #{@raw_image_files.first.num_slices} #{@raw_image_files.first.bold_reps} #{@raw_image_files.first.rep_time} #{slice_order}"

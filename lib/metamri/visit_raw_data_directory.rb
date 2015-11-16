@@ -99,9 +99,11 @@ class VisitRawDataDirectory
     
     d = Pathname.new(@visit_directory)
     d.each_subdirectory do |dd|
+      flash "ppppppppp #{dd}" if $LOG.level <= Logger::INFO
       begin
         matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
-        next unless matches.empty?
+        next unless matches.empty?   
+        dd.each_pfile_non_bz2  { |pf| @datasets << import_dataset(pf, dd);  @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
         dd.each_pfile  { |pf| @datasets << import_dataset(pf, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
       rescue StandardError => e
@@ -362,7 +364,6 @@ Returns an array of the created nifti files.
   # Returns a RawImageDataset built from the directory and single rawfile.
   def import_dataset(rawfile, original_parent_directory)
     puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
-    
     begin
       rawimagefile = RawImageFile.new(rawfile.to_s)
     # rescue StandardError => e

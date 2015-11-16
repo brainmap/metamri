@@ -11,8 +11,12 @@ class RawImageDatasetResource < ActiveResource::Base
     # This is a little wasteful since we really only care about the variables, 
     # not rescanning them.
     
+    # need to stop loading bz2 P files - 15 GB nmprage pfiles taking to long to bunzip2
+    # load just P*.7 and have routine job to pbzip2 things up later
     filename = Pathname.new(File.join(path, scanned_file))
+flash "wwwwwwwwwwww filename= #{filename}" if $LOG.level <= Logger::INFO
     filename_matches = /P\d{5}.7(.bz2)?/.match(filename)
+    filename_matches_non_bz2 = /P\d{5}(.7)?/.match(filename)
     
     if filename_matches    # Pfile
       if filename_matches[1] # '.bz2' if present, nil if otherwise.
@@ -36,6 +40,25 @@ class RawImageDatasetResource < ActiveResource::Base
       image_file.local_copy do |local_pfile| 
         @dataset = RawImageDataset.new( path, [RawImageFile.new(local_pfile)])
       end
+    elsif filename_matches_non_bz2 # non-compressed Pfile
+      if filename_matches_non_bz2[1] 
+       # filename = Pathname.new(File.join(filename, '.bz2'))
+      else
+        filename = nil
+      end
+      if filename.file?
+        image_file = filename
+      else 
+        raise IOError, "Could not find #{filename}."
+      end
+      # if non-bz2  P*.7 file , the pfile header reader is pulling file from /mounts/data/raw/...
+      # but the there is still a local copy being made - ? for the pfile reader?
+      # not sure if better to copy a bz2 file over to tmp, bunzip2, then cp to local, again?, for the pfile header reader
+      @dataset = RawImageDataset.new( path, [RawImageFile.new(filename)] )
+
+    #  image_file.local_copy do |local_pfile| 
+    #    @dataset = RawImageDataset.new( path, [RawImageFile.new(local_pfile)])
+    #  end
 
     else # Dicom      
       Pathname.new(path).first_dicom do |fd|
