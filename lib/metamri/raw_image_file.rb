@@ -18,11 +18,13 @@ require 'dicom'
 class RawImageFile
   #:stopdoc:
   MIN_HDR_LENGTH = 400
+  MIN_HDR_SUMMARY_LENGTH = 100
   DICOM_HDR = "dicom_hdr"
   RDGEHDR = "rdgehdr"
   PRINTRAW = "printraw"
+  PRINTRAW_SUMMARY = "cat"   #"printraw_summary"
   RUBYDICOM_HDR = "rubydicom"
-  VALID_HEADERS = [DICOM_HDR, PRINTRAW, RDGEHDR, RUBYDICOM_HDR]
+  VALID_HEADERS = [DICOM_HDR, PRINTRAW, RDGEHDR, RUBYDICOM_HDR,PRINTRAW_SUMMARY]
   MONTHS = {
     :jan => "01", :feb => "02", :mar => "03", :apr => "04", :may => "05", 
     :jun => "06", :jul => "07", :aug => "08", :sep => "09", :oct => "10", 
@@ -97,13 +99,21 @@ class RawImageFile
   def initialize(pathtofile)
     # raise an error if the file doesn't exist
     absfilepath = File.expand_path(pathtofile)
+     puts "initialize raw image file ="+absfilepath
     raise(IOError, "File not found at #{absfilepath}.") if not File.exists?(absfilepath)
     @filename = File.basename(absfilepath)
     @warnings = []
-    
+
+    #if P*.7.summary need different read_header_summary
+    if @filename =~ /^P*\.summary/
+       @hdr_reader = PRINTRAW_SUMMARY
+    end
     # try to read the header, raise an IOError if unsuccessful
     begin
       @hdr_data, @hdr_reader = read_header(absfilepath)
+      if @hdr_reader == nil
+           puts " hdr_reader is nil"
+      end
     rescue Exception => e
       raise(IOError, "Header not readable for file #{@filename} using #{@current_hdr_reader ? @current_hdr_reader : "unknown header reader."}. #{e}")
     end
@@ -268,24 +278,36 @@ private
   # 
   # Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
   def read_header(absfilepath)
+    tmp_filename= File.basename(absfilepath)
 
     case File.basename(absfilepath)
     when /^P.{5}\.7$|^I\..{3}/
+         # check for 
             # Try reading Pfiles or Genesis I-Files with GE's printraw
             # printraw works on the new waisman p-files
             # rdgehdr works on wimr p-files, and old waisman p-files 
          @current_hdr_reader = PRINTRAW
-      puts "aaaaaaa absfilepath="+absfilepath
+        #puts "aaaaaaa absfilepath="+absfilepath
          header = `#{PRINTRAW} '#{absfilepath}' 2> /dev/null`
          #header = `#{RDGEHDR} #{absfilepath}`
-      #puts "bbbbb header="+header
+        # puts "bbbbb pfile header="+header
          header = header.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "").force_encoding('UTF-8')
          if ( header.chomp != "" and
               header.length > MIN_HDR_LENGTH )
             @current_hdr_reader = nil
             return [ header, PRINTRAW ]
          end
-
+    when /^P.{5}\.7\.summary/
+         # check for 
+         @current_hdr_reader = PRINTRAW_SUMMARY
+         # puts "aaaaaaa summary absfilepath="+absfilepath
+         header = `#{PRINTRAW_SUMMARY} '#{absfilepath}' 2> /dev/null`
+         header = header.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "").force_encoding('UTF-8')
+         if ( header.chomp != "" and
+              header.length > MIN_HDR_SUMMARY_LENGTH )
+            @current_hdr_reader = nil
+            return [ header, PRINTRAW_SUMMARY ]
+         end
 
       # Try reading Pfiles or Genesis I-Files with GE's rdgehdr -- rdgehdr newer version needs macos 10.8, adrcdev2 = 10.7.5 - 
       # works on old headers, not on new header format
@@ -331,6 +353,7 @@ private
   # All other images are called "dicom".
   def determine_file_type
     return "pfile"    if image? and (@filename =~ /^P.....\.7/) != nil
+    return "pfile"    if (@filename =~ /^P.....\.7\.summary/) != nil
     return "geifile"  if image? and (@filename =~ /^I\.\d*/) != nil
     return "dicom"    if image? and (@filename =~ /^P.....\.7/) == nil
     return nil
@@ -340,13 +363,21 @@ private
   # Parses the header data and extracts a collection of instance variables.  If 
   # @hdr_data and @hdr_reader are not already available, this function does nothing.
   def import_hdr
-    raise(IndexError, "No Header Data Available.") if @hdr_data == nil
-    case @hdr_reader
-      when "rubydicom" then rubydicom_hdr_import
-      when "dicom_hdr" then dicom_hdr_import
-      when "printraw" then printraw_import
-      when "rdgehdr" then rdgehdr_import
-    end
+
+    if @hdr_reader == nil
+      case @file_type
+          when "pfile" then printraw_summary_import
+     end
+    else
+      raise(IndexError, "No Header Data Available.") if @hdr_data == nil
+      case @hdr_reader
+        when "rubydicom" then rubydicom_hdr_import
+        when "dicom_hdr" then dicom_hdr_import
+        when "printraw" then printraw_import
+        when "rdgehdr" then rdgehdr_import
+        when "cat" then printraw_summary_import
+      end
+     end
   end
 
 
@@ -626,11 +657,8 @@ private
      hdr_data_bak = @hdr_data
      @hdr_data.encode!("ISO-8859-1", :invalid => :replace).encode("UTF-8")  #Attribute was supposed to be a Hash, but was a String
 
-     puts "aaaaaaaaaaa"
-
     rmr_number_pat =~ @hdr_data
     @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
-    puts "bbbbbbbb "
 
     source_pat =~ @hdr_data
     @source = ($1).nil? ? "source not found" : ($1).strip.chomp
@@ -676,7 +704,90 @@ private
     image_uid_pat =~ @hdr_data
     @image_uid = ($1).strip.chomp unless $1.nil?
 
-puts "rrrrrr @image_uid ="+@image_uid .to_s
+puts "printraw_import rrrrrr @image_uid ="+@image_uid .to_s
+    @hdr_data = nil
+
+  end
+
+  def printraw_summary_import
+    source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i
+    num_slices_pat =           /rdb_hdr_nslices = ([0-9]+)/i
+    slice_thickness_pat =      /slthick = ([[:graph:]]+)/i
+    slice_spacing_pat =        /scanspacing = ([[:graph:]]+)/i
+    date_pat =                 /ex_datetime = (.*)\n/i
+    gender_pat =               /patsex = (1|2)/i
+    acquisition_matrix_x_pat = /imatrix_X = ([0-9]+)/i
+    acquisition_matrix_y_pat = /imatrix_Y = ([0-9]+)/i
+    series_description_pat =   /se_desc = ([[:graph:] \t]+)/i
+    recon_diam_pat =           /dfov = ([0-9]+)/i
+    rmr_number_pat =           /Patient ID for this exam: ([[:graph:]]+)/i
+    bold_reps_pat =            /nex = ([0-9]+)/i
+    rep_time_pat =             /reptime = ([0-9]+)/i      # not sure ifg this is right
+    study_uid_pat =            /Ssop_uid = ([[:graph:]]+)/i
+    series_uid_pat =           /series_uid = ([[:graph:]]+)/i
+    image_uid_pat =            /image_uid = (.*)/i #([[:graph:]]+)/i   
+
+     # @hdr_data = @hdr_data.encode("UTF-8", :invalid => :replace, :undef => :replace, :replace => "").force_encoding('UTF-8')
+    #@hdr_data = @hdr_data.encode!('UTF-8', 'UTF-8', :invalid => :replace)
+     #@hdr_data_2 = @hdr_data.encode("UTF-8") 
+     #@hdr_data.encode!("ISO-8859-1", :invalid => :replace).encode("UTF-8")
+     #@hdr_data.encode("UTF-8", :invalid => :replace, :replace => "") ==  invalid byte sequence in UTF-8
+     #@hdr_data.encode!("UTF-8", :invalid => :replace, :replace => "")  invalid byte sequence in UTF-8
+     #@hdr_data.encode("ISO-8859-1", :invalid => :replace)  invalid byte sequence in UTF-8
+     #@hdr_data = @hdr_data.encode('UTF-8','binary', :invalid => :replace,:undef => :replace, :replace =>'') #Attribute was supposed to be a Hash, but was a String
+     #@hdr_data = @hdr_data.encode('UTF-8','UTF-8', :invalid => :replace,:undef => :replace, :replace =>'') # invalid byte sequence in UTF-8
+     #@hdr_data.encode('UTF-8','UTF-8', :invalid => :replace,:undef => :replace, :replace =>'') # invalid byte sequence in UTF-8
+     hdr_data_bak = @hdr_data
+     @hdr_data.encode!("ISO-8859-1", :invalid => :replace).encode("UTF-8")  #Attribute was supposed to be a Hash, but was a String
+
+    rmr_number_pat =~ @hdr_data
+    @rmr_number = ($1).nil? ? "rmr not found" : ($1).strip.chomp
+
+    source_pat =~ @hdr_data
+    @source = ($1).nil? ? "source not found" : ($1).strip.chomp
+    
+    num_slices_pat =~ @hdr_data
+    @num_slices = ($1).to_i
+    
+    slice_thickness_pat =~ @hdr_data
+    @slice_thickness = ($1).to_f
+    
+    slice_spacing_pat =~ @hdr_data
+    @slice_spacing = ($1).to_f
+    
+    date_pat =~ @hdr_data
+    #@timestamp = Time.at($1.to_i).to_datetime   # thought summary date was 1969
+    @timestamp = DateTime.parse($1) # --- 2 rows- same start of line- first since epoch, 2nd date stamnp
+    
+    gender_pat =~ @hdr_data
+    @gender = $1 == 1 ? "M" : "F"
+    
+    acquisition_matrix_x_pat =~ @hdr_data
+    @acquisition_matrix_x = ($1).to_i
+    acquisition_matrix_y_pat =~ @hdr_data
+    @acquisition_matrix_y = ($1).to_i
+    
+    series_description_pat =~ @hdr_data
+    @series_description = ($1).strip.chomp
+    
+    recon_diam_pat =~ @hdr_data
+    @reconstruction_diameter = ($1).to_i
+    
+    bold_reps_pat =~ @hdr_data
+    @bold_reps = ($1).to_i
+    
+    rep_time_pat =~ @hdr_data
+    @rep_time = ($1).to_f / 1000000
+    
+    study_uid_pat =~ @hdr_data
+    @study_uid = ($1).strip.chomp unless $1.nil?
+    
+    series_uid_pat =~ @hdr_data
+    @series_uid = ($1).strip.chomp unless $1.nil?  
+    image_uid_pat =~ @hdr_data
+    @image_uid = ($1).strip.chomp unless $1.nil?
+
+puts "printraw_summary_import rrrrrr @image_uid ="+@image_uid .to_s
     @hdr_data = nil
 
   end

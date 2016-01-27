@@ -17,6 +17,7 @@ class RawImageDatasetResource < ActiveResource::Base
 flash "wwwwwwwwwwww filename= #{filename}" if $LOG.level <= Logger::INFO
     filename_matches = /P\d{5}.7(.bz2)?/.match(filename)
     filename_matches_non_bz2 = /P\d{5}(.7)?/.match(filename)
+    filename_matches_summary = /P\d{5}(.7.summary)?/.match(filename)
     
     if filename_matches    # Pfile
       if filename_matches[1] # '.bz2' if present, nil if otherwise.
@@ -28,7 +29,7 @@ flash "wwwwwwwwwwww filename= #{filename}" if $LOG.level <= Logger::INFO
       # The actual file on the filesystem may be zipped or unzipped 
       # (although it Should! be zipped.  Check for that or return IOError.
       zipped_filename = filename.to_s.chomp + '.bz2'
-
+      summary_filename = filename.to_s.chomp + '.summary'
       if filename.file?
         image_file = filename
       elsif Pathname.new(zipped_filename).file?
@@ -36,11 +37,18 @@ flash "wwwwwwwwwwww filename= #{filename}" if $LOG.level <= Logger::INFO
       else 
         raise IOError, "Could not find #{filename} or it's bz2 zipped equivalent #{zipped_filename}."
       end
-      
+      puts "raw_image_dataset_resource  before check for P*.7.summary"
+      if  Pathname.new(summary_filename).file?
+         puts "raw_image_dataset_resource   THERE IS A SUMMARY P*.7.summary file"
+         # skiplocal copy 
+         # make @dataset
+      end
+
       image_file.local_copy do |local_pfile| 
         @dataset = RawImageDataset.new( path, [RawImageFile.new(local_pfile)])
       end
     elsif filename_matches_non_bz2 # non-compressed Pfile
+      puts "raw_image_dataset_resource  matches non_bz2"
       if filename_matches_non_bz2[1] 
        # filename = Pathname.new(File.join(filename, '.bz2'))
       else
@@ -59,6 +67,29 @@ flash "wwwwwwwwwwww filename= #{filename}" if $LOG.level <= Logger::INFO
     #  image_file.local_copy do |local_pfile| 
     #    @dataset = RawImageDataset.new( path, [RawImageFile.new(local_pfile)])
     #  end
+    elsif filename_matches_summary # 3 line summary of Pfile
+      # not do anything - check in P*.7 and P*.7.bz2 if P*.7.summary exists
+      puts "raw_image_dataset_resource P*.7.summary match"
+     # if filename_matches_summary[1] 
+       # filename = Pathname.new(File.join(filename, '.bz2'))
+    #    puts " summary file name="+filename
+     # else
+     #   filename = nil
+    #  end
+    #  if filename.file?
+    #    image_file = filename
+    #  else 
+    #    raise IOError, "Could not find #{filename}."
+    #  end
+      # if non-bz2  P*.7 file , the pfile header reader is pulling file from /mounts/data/raw/...
+      # but the there is still a local copy being made - ? for the pfile reader?
+      # not sure if better to copy a bz2 file over to tmp, bunzip2, then cp to local, again?, for the pfile header reader
+     # @dataset = RawImageDataset.new( path, [RawImageFile.new(filename)] )
+
+    #  image_file.local_copy do |local_pfile| 
+    #    @dataset = RawImageDataset.new( path, [RawImageFile.new(local_pfile)])
+    #  end
+
 
     else # Dicom      
       Pathname.new(path).first_dicom do |fd|

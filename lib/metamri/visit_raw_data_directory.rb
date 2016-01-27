@@ -102,9 +102,11 @@ class VisitRawDataDirectory
       flash "ppppppppp #{dd}" if $LOG.level <= Logger::INFO
       begin
         matches = options[:ignore_patterns].collect {|pat| dd.to_s =~ pat ? dd : nil }.compact
-        next unless matches.empty?   
+        next unless matches.empty?  
+        # if dd is P*.7.bz2 or P*.7 , check for P*.7.summary 
         dd.each_pfile_non_bz2  { |pf| @datasets << import_dataset(pf, dd);  @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
-        dd.each_pfile  { |pf| @datasets << import_dataset(pf, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
+        dd.each_pfile  { |pf|  # check for p*.7.summary
+              @datasets << import_dataset(pf, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
       rescue StandardError => e
         raise(e, "There was an error scaning dataset #{dd}: #{e}")
@@ -365,12 +367,22 @@ Returns an array of the created nifti files.
   def import_dataset(rawfile, original_parent_directory)
     puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
     begin
-      rawimagefile = RawImageFile.new(rawfile.to_s)
+      # if summary, change rawfile to /mounts/data/raw/[s]/[enum_exam_date]/mri/dir/P*.summary for 
+      tmp_filename = File.basename rawfile.to_s
+      tmp_filname_summary_s = (tmp_filename).gsub(/\.bz2/,"").gsub(/\.summary/,"")+".summary"
+      tmp_branch_summary_s = original_parent_directory.to_s+"/"+tmp_filname_summary_s
+       if File.exist?(tmp_branch_summary_s)
+            #branch_summary_pn = Pathname.new(branch_summary_s)
+         rawimagefile = RawImageFile.new(tmp_branch_summary_s)
+        else
+            rawimagefile = RawImageFile.new(rawfile.to_s)
+        end
+
     # rescue StandardError => e
       # puts e.backtrace
       # raise(e, "+++ Trouble reading raw image file #{rawfile}. #{e}")
     end
-    
+
     return RawImageDataset.new(original_parent_directory.to_s, [rawimagefile])
   end
   
