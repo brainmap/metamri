@@ -125,7 +125,7 @@ class RawImageDatasetThumbnail
     if dicom_files.empty? # If still empty...
       raise StandardError, "Could not find dicom files using #{dataset.glob} in #{dataset.directory}"
     end
-    dicom_file = Pathname(dicom_files[(dicom_files.size/2)+1])
+    dicom_file = Pathname(dicom_files[(dicom_files.size/3)+1])   # 2 => 3 to keep asl in first half of set --> delay time
     dicom_file.local_copy do |lc|
       #dcm = DICOM::DObject.new(lc.to_s) # changing from dicom 0.8.0  to 0.9.5
       dcm = DICOM::DObject.read(lc.to_s)
