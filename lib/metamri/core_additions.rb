@@ -44,7 +44,15 @@ class Pathname
       next unless leaf.to_s =~ /^P.{5}\.7(\.bz2)/
       branch = self + leaf
       next if branch.symlink?
-      if branch.size >= min_file_size
+      v_pfile_small_but_summary_flag ="N"
+      if branch.size < min_file_size
+        leaf_summary_s = (leaf.to_s).gsub(/\.bz2/,"")+".summary"
+        branch_summary_s = self.to_s+"/"+leaf_summary_s
+        if File.exist?(branch_summary_s)
+           v_pfile_small_but_summary_flag ="Y"
+        end
+      end
+      if branch.size >= min_file_size or v_pfile_small_but_summary_flag == "Y"
         # check for P*.7.summary 
         # if there, skip local_copy of P*.7.bz2
        leaf_summary_s = (leaf.to_s).gsub(/\.bz2/,"")+".summary"
