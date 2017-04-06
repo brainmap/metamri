@@ -196,14 +196,15 @@ class RawImageFile
   # compatible database (sqlite3).  This is intended for inserting into the rails
   # backend database.
   def db_insert(image_dataset_id)
-    "INSERT INTO raw_image_files
-    (filename, header_reader, file_type, timestamp, source, rmr_number, series_description, 
-    gender, num_slices, slice_thickness, slice_spacing, reconstruction_diameter, 
-    acquisition_matrix_x, acquisition_matrix_y, rep_time, bold_reps, created_at, updated_at, image_dataset_id)
-    VALUES ('#{@filename}', '#{@hdr_reader}', '#{@file_type}', '#{@timestamp.to_s}', '#{@source}', '#{@rmr_number}', 
-    '#{@series_description}', '#{@gender}', #{@num_slices}, #{@slice_thickness}, #{@slice_spacing}, 
-    #{@reconstruction_diameter}, #{@acquisition_matrix_x}, #{@acquisition_matrix_y}, #{@rep_time}, 
-    #{@bold_reps}, '#{DateTime.now}', '#{DateTime.now}', #{image_dataset_id})"
+    ####"INSERT INTO raw_image_files
+    ####(filename, header_reader, file_type, timestamp, source, rmr_number, series_description, 
+    ####gender, num_slices, slice_thickness, slice_spacing, reconstruction_diameter, 
+    ####acquisition_matrix_x, acquisition_matrix_y, rep_time, bold_reps, created_at, updated_at, image_dataset_id)
+    ####VALUES ('#{@filename}', '#{@hdr_reader}', '#{@file_type}', '#{@timestamp.to_s}', '#{@source}', '#{@rmr_number}', 
+    ####'#{@series_description}', '#{@gender}', #{@num_slices}, #{@slice_thickness}, #{@slice_spacing}, 
+   #### #{@reconstruction_diameter}, #{@acquisition_matrix_x}, #{@acquisition_matrix_y}, #{@rep_time}, 
+   #### #{@bold_reps}, '#{DateTime.now}', '#{DateTime.now}', #{image_dataset_id})"  
+     puts "Old no raw_image_files table"
   end
 
   # Returns an SQL statement to select this image file row from the raw_image_files table
@@ -222,31 +223,35 @@ class RawImageFile
   # Uses the db_insert method to actually perform the database insert using the 
   # specified database file.
   def db_insert!( db_file )
-    db = SQLite3::Database.new( db_file )
-    db.transaction do |database|
-      if not database.execute( db_fetch ).empty?
-        raise(IndexError, "Entry exists for #{filename}, #{@rmr_number}, #{@timestamp.to_s}... Skipping.")
-      end
-      database.execute( db_insert )
-    end
-    db.close
+    ####db = SQLite3::Database.new( db_file )
+    ####db.transaction do |database|
+    ####  if not database.execute( db_fetch ).empty?
+    ####    raise(IndexError, "Entry exists for #{filename}, #{@rmr_number}, #{@timestamp.to_s}... Skipping.")
+    ####  end
+    ####  database.execute( db_insert )
+    ####end
+    ####db.close
+    puts "SQLite3"
   end
 
   # Removes this instance from the raw_image_files table of the specified database.
   def db_remove!( db_file )
-    db = SQLite3::Database.new( db_file )
-    db.execute( db_remove )
-    db.close
+    ####db = SQLite3::Database.new( db_file )
+    ####db.execute( db_remove )
+    ####db.close  
+    puts "SQLite3"
   end
   
   # Finds the row in the raw_image_files table of the given db file that matches this object.
   # ORM is based on combination of rmr_number, timestamp, and filename.  The row is returned 
   # as an array of values (see 'sqlite3' gem docs).
   def db_fetch!( db_file )
-    db = SQLite3::Database.new( db_file )
-    db_row = db.execute( db_fetch )
-    db.close
-    return db_row
+    ####db = SQLite3::Database.new( db_file )
+    ####db_row = db.execute( db_fetch )
+    ####db.close
+    ####return db_row
+    puts "SQLite" 
+    return nil
   end
   
   # The series ID (dicom_series_uid [dicom] or series_uid [pfile/ifile])
