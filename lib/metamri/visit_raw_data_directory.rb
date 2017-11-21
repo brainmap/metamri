@@ -192,8 +192,25 @@ Returns an array of the created nifti files.
         
     @datasets.each do |dataset|
       nifti_output_path = output_directory
-      v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
-      v_series_description = "."+dataset.series_description.gsub(/ /,"").gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      #v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      #v_series_description = "."+dataset.series_description.gsub(/ /,"").gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      # 20171120 addition
+      v_basename =File.basename(dataset.directory)
+      v_series_description = "."+dataset.series_description
+#puts "aaaaa start v_basename ="+v_basename
+#puts "bbbbb start v_series_description="+v_series_description
+      v_series_description_full_replace = v_series_description
+      # need to get the scan series numbers - take the v_basename/folder name -- replace all the series description stuff
+      # end up with scan series number - add to the end of the series_description to get the nii file nam 
+      if !v_basename.nil?
+        v_basename = v_basename.gsub(/ /,"").gsub(/\-/,"").gsub(/\_/,"").gsub(/\(/,"").gsub(/\)/,"").gsub(/\=/,"").gsub(/\+/,"").gsub(/\'/,"").gsub(/\^/,"").gsub(/\,/,"").gsub(/\:/,"").gsub(/\*/,"star")
+      end
+      if !v_series_description_full_replace.nil?
+          v_series_description_full_replace =  v_series_description_full_replace.gsub(/ /,"").gsub(/\-/,"").gsub(/\_/,"").gsub(/\(/,"").gsub(/\)/,"").gsub(/\=/,"").gsub(/\+/,"").gsub(/\'/,"").gsub(/\^/,"").gsub(/\,/,"").gsub(/\:/,"").gsub(/\*/,"star")
+      end 
+
+#puts "ccccc end v_basename="+v_basename
+#puts "dddd end v_series_description_full_replace="+v_series_description_full_replace
       if v_basename.include? v_series_description
            # want the scan series number - e.g. 00001 at the end
            v_tmp_filename =  v_basename.gsub(v_series_description,"")
