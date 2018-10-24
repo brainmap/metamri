@@ -108,8 +108,6 @@ class VisitRawDataDirectory
         dd.each_pfile  { |pf|  # check for p*.7.summary
               @datasets << import_dataset(pf, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
-        #UP TO HERE
-     #####dd.each_scanner_archive_summary {|sa| @datasets << import_dataset(sa, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
        if (dd.to_s).include?("scan_archives") and (dd.to_s).include?("raw_data")
          dd.each_scanner_archive_summary { |sa|  @datasets << import_dataset(sa, dd);  @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
        end
@@ -197,14 +195,23 @@ Returns an array of the created nifti files.
         
     @datasets.each do |dataset|
       nifti_output_path = output_directory
-       #v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
-      v_basename =File.basename(dataset.directory).gsub(/\(/,"_").gsub(/\)/,"_").gsub(/\+/,"_").gsub(/\^/,"_").gsub(/\=/,"_").gsub(/\,/,"_").gsub(/\-/,"_").gsub(/__/,"_")
-      v_basename = v_basename.gsub(/__/,"_")
+      #v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
       #v_series_description = "."+dataset.series_description.gsub(/ /,"").gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
-      v_series_description = "."+dataset.series_description.gsub(/ /,"_").gsub(/\(/,"_").gsub(/\)/,"_").gsub(/\+/,"_").gsub(/\^/,"_").gsub(/\=/,"_").gsub(/\,/,"_").gsub(/\-/,"_").gsub(/__/,"_")
-      v_series_description = "."+dataset.series_description.gsub(/__/,"_")
-         # v_tmp_filename and v_series_description chacater replacements differ
-           # v_characters_to_replace_list = ['(',')','+','^','=',',','-','__']
+      # 20171120 addition
+      v_basename =File.basename(dataset.directory)
+      v_series_description = "."+dataset.series_description
+      v_series_description_full_replace = v_series_description
+      # need to get the scan series numbers - take the v_basename/folder name -- replace all the series description stuff
+      # end up with scan series number - add to the end of the series_description to get the nii file nam 
+      if !v_basename.nil?
+        v_basename = v_basename.gsub(/ /,"").gsub(/\-/,"").gsub(/\_/,"").gsub(/\(/,"").gsub(/\)/,"").gsub(/\=/,"").gsub(/\+/,"").gsub(/\'/,"").gsub(/\^/,"").gsub(/\,/,"").gsub(/\:/,"").gsub(/\*/,"star")
+      end
+      if !v_series_description_full_replace.nil?
+          v_series_description_full_replace =  v_series_description_full_replace.gsub(/ /,"").gsub(/\-/,"").gsub(/\_/,"").gsub(/\(/,"").gsub(/\)/,"").gsub(/\=/,"").gsub(/\+/,"").gsub(/\'/,"").gsub(/\^/,"").gsub(/\,/,"").gsub(/\:/,"").gsub(/\*/,"star")
+      end 
+
+#puts "ccccc end v_basename="+v_basename
+#puts "dddd end v_series_description_full_replace="+v_series_description_full_replace
 
       if v_basename.include? v_series_description
            # want the scan series number - e.g. 00001 at the end
@@ -377,7 +384,7 @@ Returns an array of the created nifti files.
   # 
   # Returns a RawImageDataset built from the directory and single rawfile.
   def import_dataset(rawfile, original_parent_directory)
-    puts "Importing scan sessionz: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
+    puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
     begin
       # if summary, change rawfile to /mounts/data/raw/[s]/[enum_exam_date]/mri/dir/P*.summary for 
       tmp_filename = File.basename rawfile.to_s
