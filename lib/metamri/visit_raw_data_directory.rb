@@ -108,6 +108,11 @@ class VisitRawDataDirectory
         dd.each_pfile  { |pf|  # check for p*.7.summary
               @datasets << import_dataset(pf, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
         dd.first_dicom { |fd| @datasets << import_dataset(fd, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
+        #UP TO HERE
+     #####dd.each_scanner_archive_summary {|sa| @datasets << import_dataset(sa, dd); @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
+       if (dd.to_s).include?("scan_archives") and (dd.to_s).include?("raw_data")
+         dd.each_scanner_archive_summary { |sa|  @datasets << import_dataset(sa, dd);  @datasets.last.print_scan_status if $LOG.level == Logger::INFO }
+       end
       rescue StandardError => e
         raise(e, "There was an error scaning dataset #{dd}: #{e}")
       end
@@ -192,8 +197,15 @@ Returns an array of the created nifti files.
         
     @datasets.each do |dataset|
       nifti_output_path = output_directory
-      v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
-      v_series_description = "."+dataset.series_description.gsub(/ /,"").gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+       #v_basename =File.basename(dataset.directory).gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      v_basename =File.basename(dataset.directory).gsub(/\(/,"_").gsub(/\)/,"_").gsub(/\+/,"_").gsub(/\^/,"_").gsub(/\=/,"_").gsub(/\,/,"_").gsub(/\-/,"_").gsub(/__/,"_")
+      v_basename = v_basename.gsub(/__/,"_")
+      #v_series_description = "."+dataset.series_description.gsub(/ /,"").gsub(/-/,"").gsub(/_/,"").gsub(/\:/,"").gsub(/\//,"")
+      v_series_description = "."+dataset.series_description.gsub(/ /,"_").gsub(/\(/,"_").gsub(/\)/,"_").gsub(/\+/,"_").gsub(/\^/,"_").gsub(/\=/,"_").gsub(/\,/,"_").gsub(/\-/,"_").gsub(/__/,"_")
+      v_series_description = "."+dataset.series_description.gsub(/__/,"_")
+         # v_tmp_filename and v_series_description chacater replacements differ
+           # v_characters_to_replace_list = ['(',')','+','^','=',',','-','__']
+
       if v_basename.include? v_series_description
            # want the scan series number - e.g. 00001 at the end
            v_tmp_filename =  v_basename.gsub(v_series_description,"")
@@ -365,15 +377,19 @@ Returns an array of the created nifti files.
   # 
   # Returns a RawImageDataset built from the directory and single rawfile.
   def import_dataset(rawfile, original_parent_directory)
-    puts "Importing scan session: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
+    puts "Importing scan sessionz: #{original_parent_directory.to_s} using raw data file: #{rawfile.basename}" if $LOG.level <= Logger::DEBUG
     begin
       # if summary, change rawfile to /mounts/data/raw/[s]/[enum_exam_date]/mri/dir/P*.summary for 
       tmp_filename = File.basename rawfile.to_s
       tmp_filname_summary_s = (tmp_filename).gsub(/\.bz2/,"").gsub(/\.summary/,"")+".summary"
       tmp_branch_summary_s = original_parent_directory.to_s+"/"+tmp_filname_summary_s
+      tmp_branch_scan_archive_json = original_parent_directory.to_s+"/"+tmp_filename
+
        if File.exist?(tmp_branch_summary_s)
             #branch_summary_pn = Pathname.new(branch_summary_s)
          rawimagefile = RawImageFile.new(tmp_branch_summary_s)
+        elsif File.exists?(tmp_branch_scan_archive_json)
+          rawimagefile = RawImageFile.new(tmp_branch_scan_archive_json)
         else
             rawimagefile = RawImageFile.new(rawfile.to_s)
         end

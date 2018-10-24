@@ -4,6 +4,7 @@ require 'rubygems';
 require 'yaml';
 # require 'sqlite3';
 require 'dicom'
+require 'json'
 
 
 # Implements a collection of metadata associated with a raw image file.  In
@@ -23,8 +24,9 @@ class RawImageFile
   RDGEHDR = "rdgehdr"
   PRINTRAW = "printraw"
   PRINTRAW_SUMMARY = "cat"   #"printraw_summary"
+  PRINTRAW_H5_JSON = "cat"
   RUBYDICOM_HDR = "rubydicom"
-  VALID_HEADERS = [DICOM_HDR, PRINTRAW, RDGEHDR, RUBYDICOM_HDR,PRINTRAW_SUMMARY]
+  VALID_HEADERS = [DICOM_HDR, PRINTRAW, RDGEHDR, RUBYDICOM_HDR,PRINTRAW_SUMMARY,PRINTRAW_H5_JSON]
   MONTHS = {
     :jan => "01", :feb => "02", :mar => "03", :apr => "04", :may => "05", 
     :jun => "06", :jul => "07", :aug => "08", :sep => "09", :oct => "10", 
@@ -87,6 +89,12 @@ class RawImageFile
   attr_reader :operator_name
   # Patient "Name", usually StudyID or ENUM
   attr_reader :patient_name
+  # head coil
+  attr_reader :mri_coil_name  
+  # staion name
+  attr_reader :mri_station_name 
+  # mri model name
+  attr_reader :mri_manufacturer_model_name  
   
   # Creates a new instance of the class given a path to a valid image file.
   # 
@@ -107,6 +115,9 @@ class RawImageFile
     #if P*.7.summary need different read_header_summary
     if @filename =~ /^P*\.summary/
        @hdr_reader = PRINTRAW_SUMMARY
+    end
+    if @filename =~ /^ScanArchive*\.h5.json/
+       @hdr_reader = nil #PRINTRAW_H5_JSON
     end
     # try to read the header, raise an IOError if unsuccessful
     begin
@@ -152,6 +163,9 @@ class RawImageFile
     return @file_type == "pfile"
   end
 
+ def scan_archive_h5_json?
+    return @file_type == "scan_archive_h5_json"
+  end
 
   # Predicate simply returns true if "dicom" is stored in the img_type instance variable.
   def dicom?
@@ -284,7 +298,7 @@ private
   # Note: The rdgehdr is a binary file; the correct version for your architecture must be installed in the path.
   def read_header(absfilepath)
     tmp_filename= File.basename(absfilepath)
-
+    
     case File.basename(absfilepath)
     when /^P.{5}\.7$|^I\..{3}/
          # check for 
@@ -302,6 +316,22 @@ private
             @current_hdr_reader = nil
             return [ header, PRINTRAW ]
          end
+    when /^ScanArchive_.{10,}\.h5\.json$/
+        json_file = File.read(absfilepath)
+        data_hash = JSON.parse(json_file)
+        ####header ="se_desc =               "+data_hash["SERIES INFORMATION"]["Series Desc"]+"
+####image_uid =             "+data_hash["RHUSER and OPUSER INFORMATION"]["imagehead.image_uid"]+"\n"
+        ## if ( header.chomp != "" )#and   header.length > MIN_HDR_SUMMARY_LENGTH )
+        if !data_hash.nil?
+            @current_hdr_reader = nil
+           # puts data_hash.to_s
+            # FAILING IN HEADER READ - WHERE IS THE HEADER TRYING TO GET READ? NOT STOPING AT PRINTRAW_SUMMARY
+            # CAN THE data_hash be passed instead of the header, and then read in the header_json_reader?
+            return [data_hash, nil] ###PRINTRAW_H5_JSON  ]
+            ###return [ header, PRINTRAW_H5_JSON ]
+         end
+        # need to read json
+        # create header
     when /^P.{5}\.7\.summary/
          # check for 
          @current_hdr_reader = PRINTRAW_SUMMARY
@@ -360,6 +390,7 @@ private
     return "pfile"    if image? and (@filename =~ /^P.....\.7/) != nil
     return "pfile"    if (@filename =~ /^P.....\.7\.summary/) != nil
     return "geifile"  if image? and (@filename =~ /^I\.\d*/) != nil
+    return "scan_archive_h5_json"  if (@filename =~ /^ScanArchive_.{10,}.h5.json/) != nil
     return "dicom"    if image? and (@filename =~ /^P.....\.7/) == nil
     return nil
   end
@@ -368,10 +399,10 @@ private
   # Parses the header data and extracts a collection of instance variables.  If 
   # @hdr_data and @hdr_reader are not already available, this function does nothing.
   def import_hdr
-
     if @hdr_reader == nil
       case @file_type
           when "pfile" then printraw_summary_import
+          when "scan_archive_h5_json" then printraw_scan_archive_h5_json
      end
     else
       raise(IndexError, "No Header Data Available.") if @hdr_data == nil
@@ -713,6 +744,88 @@ puts "printraw_import rrrrrr @image_uid ="+@image_uid .to_s
     @hdr_data = nil
 
   end
+  def printraw_scan_archive_h5_json
+     #puts "hhhhhhh @hdr_data[SERIES INFORMATION][Series Desc]="+@hdr_data["SERIES INFORMATION"]["Series Desc"] 
+    source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i
+    num_slices_pat =           /Number of slices in this scan group: ([0-9]+)/i
+    slice_thickness_pat =      /slice thickness \(mm\): ([[:graph:]]+)/i
+    slice_spacing_pat =        /spacing between scans \(mm\??\): ([[:graph:]]+)/i
+    date_pat =                 /actual image date\/time stamp: (.*)\n/i
+    gender_pat =               /Patient Sex: (1|2)/i
+    acquisition_matrix_x_pat = /Image matrix size \- X: ([0-9]+)/i
+    acquisition_matrix_y_pat = /Image matrix size \- Y: ([0-9]+)/i
+    series_description_pat =   /Series Description: ([[:graph:] \t]+)/i
+    recon_diam_pat =           /Display field of view \- X \(mm\): ([0-9]+)/i
+    rmr_number_pat =           /Patient ID for this exam: ([[:graph:]]+)/i
+    bold_reps_pat =            /Number of excitations: ([0-9]+)/i
+    rep_time_pat =             /Pulse repetition time \(usec\): ([0-9]+)/i
+    study_uid_pat =            /Study entity unique ID: ([[:graph:]]+)/i
+    series_uid_pat =           /Series entity unique ID: ([[:graph:]]+)/i
+    image_uid_pat =            /Image unique ID: ([[:graph:]]+)/i    
+
+    @dicom_taghash =  @hdr_data
+    @rmr_number = (@hdr_data["PATIENT INFORMATION"]["PID"]).nil? ? "rmr not found" : (@hdr_data["PATIENT INFORMATION"]["PID"]).strip.chomp
+
+    @source = (@hdr_data["EXAM INFORMATION"]["Hospital Name"]).nil? ? "source not found" : (@hdr_data["EXAM INFORMATION"]["Hospital Name"]).strip.chomp
+ 
+    ####num_slices_pat =~ @hdr_data
+    @num_slices = (@hdr_data["ACQUISITION INFORMATION"]["Nslices"]).strip.chomp
+ 
+    ####slice_thickness_pat =~ @hdr_data
+    @slice_thickness = (@hdr_data["RECONSTRUCTION INFORMATION"][ "Z thick"]).strip.to_f
+   
+
+    ####slice_spacing_pat =~ @hdr_data
+    @slice_spacing = 0 #($1).to_f
+
+    ####date_pat =~ @hdr_data
+
+    v_scan_date_mm_dd_yy = @hdr_data["EXAM INFORMATION"]["Exam Date"] # @hdr_data["ACQUISITION INFORMATION"]["Scan Date"] had 3 digit year???
+    v_scan_time_hh24_min = @hdr_data["ACQUISITION INFORMATION"]["Scan Time"]
+    v_scan_date_mm_dd_yy_array = v_scan_date_mm_dd_yy.split(" ")
+    v_scan_time_hh24_min_array = v_scan_time_hh24_min.split(" ")
+    if v_scan_date_mm_dd_yy_array.count > 2 and v_scan_time_hh24_min_array.count > 1
+        v_datetime = "20"+v_scan_date_mm_dd_yy_array[2]+"-"+v_scan_date_mm_dd_yy_array[0]+"-"+v_scan_date_mm_dd_yy_array[1]+"T"+v_scan_time_hh24_min_array[0]+":"+v_scan_time_hh24_min_array[1]
+        @timestamp =   v_datetime.to_datetime 
+    else
+        @timestamp = Datetime.new
+
+    end
+    ####@timestamp = DateTime.parse(v_datetime) 
+    @gender = @hdr_data["PATIENT INFORMATION"]["Sex"] == 1 ? "M" : "F"
+    
+    ####acquisition_matrix_x_pat =~ @hdr_data
+    @acquisition_matrix_x = (@hdr_data["RECONSTRUCTION INFORMATION"]["Xres"]).strip.to_i
+    ####acquisition_matrix_y_pat =~ @hdr_data
+    @acquisition_matrix_y = 0 #####($1).to_i
+    
+    @series_description = (@hdr_data["RHUSER and OPUSER INFORMATION"]["serieshead.se_desc"]).strip.chomp
+    
+    ####recon_diam_pat =~ @hdr_data
+    @reconstruction_diameter = (@hdr_data["RECONSTRUCTION INFORMATION"]["Yres"]).strip.to_i
+    
+    ####bold_reps_pat =~ @hdr_data
+    @bold_reps = 0 ####($1).to_i
+    
+    ####rep_time_pat =~ @hdr_data
+    @rep_time = (@hdr_data["RHUSER and OPUSER INFORMATION"]["imagehead.reptime"]).to_f / 1000000
+    @study_uid = (@hdr_data["RHUSER and OPUSER INFORMATION"]["examhead.study_uid"]).strip.chomp unless @hdr_data["RHUSER and OPUSER INFORMATION"]["examhead.study_uid"].nil?
+    
+
+    @series_uid = @hdr_data["RHUSER and OPUSER INFORMATION"]["serieshead.series_uid"].chomp unless @hdr_data["RHUSER and OPUSER INFORMATION"]["serieshead.series_uid"].nil?
+    
+
+    @image_uid = (@hdr_data["RHUSER and OPUSER INFORMATION"]["imagehead.image_uid"]).strip.chomp unless @hdr_data["RHUSER and OPUSER INFORMATION"]["imagehead.image_uid"].nil?
+    if !@image_uid.nil?
+       @image_uid = "sa"+@image_uid # unique index on uid - same uid may be in dicoms as scan archive
+    end
+
+    @mri_coil_name = @hdr_data["ACQUISITION INFORMATION"]["Coil Name"].chomp unless @hdr_data["ACQUISITION INFORMATION"]["Coil Name"].nil?
+    
+    @mri_station_name = @hdr_data["EXAM INFORMATION"]["System ID"].chomp unless @hdr_data["EXAM INFORMATION"]["System ID"].nil?
+    ####@mri_manufacturer_model_name = ???
+   end 
+
 
   def printraw_summary_import
     source_pat =               /hospital [Nn]ame: ([[:graph:]\t ]+)/i

@@ -14,10 +14,16 @@ class RawImageDatasetResource < ActiveResource::Base
     # need to stop loading bz2 P files - 15 GB nmprage pfiles taking to long to bunzip2
     # load just P*.7 and have routine job to pbzip2 things up later
     filename = Pathname.new(File.join(path, scanned_file))
-flash "wwwwwwwwwwww filename= #{filename}" if $LOG.level <= Logger::INFO
+flash "wwwwwwwwwwwwZZZZZZ filename= #{filename}" #if $LOG.level <= Logger::INFO
     filename_matches = /P\d{5}.7(.bz2)?/.match(filename)
     filename_matches_non_bz2 = /P\d{5}(.7)?/.match(filename)
     filename_matches_summary = /P\d{5}(.7.summary)?/.match(filename)
+
+    filename_matches_json = /^ScanArchive.*(.h5.json)?/.match(filename)
+    puts "zzzzZZZ filename="+filename
+    if filename_matches_json
+      puts "IIITTTS a json"
+    end
     
     if filename_matches    # Pfile
       if filename_matches[1] # '.bz2' if present, nil if otherwise.

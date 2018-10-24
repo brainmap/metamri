@@ -47,6 +47,12 @@ class RawImageDataset
   attr_reader :dicom_taghash
   # Array of Read Error Strings
   attr_reader :read_errors
+  # head coil
+  attr_reader :mri_coil_name  
+  # staion name
+  attr_reader :mri_station_name 
+  # mri model name
+  attr_reader :mri_manufacturer_model_name  
 
   
   # * dir: The directory containing the files.
@@ -113,6 +119,12 @@ class RawImageDataset
     
     @image_uid  = @raw_image_files.first.image_uid
     validates_metainfo_for :image_uid if pfile?
+
+    @mri_coil_name  = @raw_image_files.first.mri_coil_name
+
+    @mri_station_name  = @raw_image_files.first.mri_station_name
+
+    @mri_manufacturer_model_name   = @raw_image_files.first.mri_manufacturer_model_name 
     
     $LOG ||= Logger.new(STDOUT)
   end
@@ -134,7 +146,7 @@ class RawImageDataset
   # transaction at the visit level, or even higher when doing a whole file system
   # scan.
   def db_insert(visit_id)
-    "INSERT INTO image_datasets
+    "INSERT INto image_datasets
     (rmr, series_description, path, timestamp, created_at, updated_at, visit_id, 
     glob, rep_time, bold_reps, slices_per_volume, scanned_file, 'dicom_study_uid')
     VALUES ('#{@rmr_number}', '#{@series_description}', '#{@directory}', '#{@timestamp.to_s}', '#{DateTime.now}', 
@@ -191,7 +203,10 @@ class RawImageDataset
       :scanned_file => @scanned_file,
       :dicom_series_uid => @dicom_series_uid,
       :dicom_taghash => @dicom_taghash,
-      :image_uid => @image_uid
+      :image_uid => @image_uid,
+      :mri_coil_name => @mri_coil_name, 
+      :mri_station_name => @mri_station_name, 
+      :mri_manufacturer_model_name => @mri_manufacturer_model_name
     }.merge attrs
   end
   
@@ -287,7 +302,9 @@ Returns a path to the created dataset as a string if successful.
         @file_count = Dir.open(@directory).reject{ |branch| /(^\.|.yaml$)/.match(branch) }.length
       elsif @raw_image_files.first.pfile?
         @file_count = 1
-      else raise "File not recognized as dicom or pfile."
+      elsif @raw_image_files.first.scan_archive_h5_json?
+        @file_count = 1
+      else raise "File not recognized as dicom or pfile or scan_archive_h5_json."
       end
     end
     return @file_count
@@ -325,6 +342,13 @@ Returns a path to the created dataset as a string if successful.
         else
           relative_dataset_path = image_file.filename
         end
+      when 'scan_archive_h5_json'
+        full_dataset_path = Pathname.new(File.join(directory, image_file.filename))
+        if visit_dir
+          relative_dataset_path = full_dataset_path.relative_path_from(visit_dir)
+        else
+          relative_dataset_path = image_file.filename
+        end
       else raise "Cannot identify #{@raw_image_files.first.filename}"
     end
     
@@ -353,6 +377,10 @@ Returns a path to the created dataset as a string if successful.
   # This just sends dicom? to the first raw file in the dataset.
   def geifile?
     @raw_image_files.first.geifile?
+  end
+
+   def scan_archive_h5_json?
+      @raw_image_files.first.scan_archive_h5_json?
   end
   
 private

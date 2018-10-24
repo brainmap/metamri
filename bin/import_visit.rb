@@ -49,7 +49,7 @@ require 'metamri'
 def import_visit(raw_directory, scan_procedure_codename, database)
   log = Logger.new(File.basename(raw_directory))  
   v = VisitRawDataDirectory.new(raw_directory, scan_procedure_codename)
-  puts "+++ Importing #{v.visit_directory} as part of #{v.scan_procedure_name} +++"
+  puts "|||+++ Importing #{v.visit_directory} as part of #{v.scan_procedure_name} +++"
   begin
     v.scan
     v.db_insert!(database)

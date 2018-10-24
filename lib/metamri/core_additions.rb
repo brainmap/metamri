@@ -128,6 +128,29 @@ class Pathname
     end
   end
 
+
+    def each_scanner_archive_summary
+    entries.each do |leaf|
+      next unless leaf.to_s =~ /^ScanArchive.*(.h5.json)$/
+      branch = self + leaf
+      next if branch.symlink?
+        lc = branch.local_copy
+        begin
+          yield lc
+        rescue StandardError => e
+          case $LOG.level
+          when Logger::DEBUG
+            raise e
+          else
+            puts "#{e}"
+          end
+        ensure
+          lc.delete
+        end
+    end
+  end
+
+
   
   def first_dicom
     entries.each do |leaf|
